@@ -1,24 +1,32 @@
 
-from dataclasses import astuple, asdict
+from dataclasses import astuple
 from pathlib import Path
 from random import seed, uniform
+from itertools import product
 
-from .util import Uniform_WC_Dist, WC_Set, Metadata, Paths
+from .util import (
+    Delta_WC_Values, 
+    Delta_WC_Counts,
+    Delta_WC_Intervals, 
+    Metadata, 
+    Paths, 
+    linspace,
+)
 
 
-class Sampler:
+class Random_Sampler:
     def __init__(
         self, 
-        dist:Uniform_WC_Dist,
+        delta_wc_intervals:Delta_WC_Intervals,
         seed_:int|None=None,
     ):
         seed(seed_)
-        self.dist = dist
+        self.delta_wc_intervals = delta_wc_intervals
 
     def sample(
         self, 
         n:int,
-    ) -> list[WC_Set]:
+    ) -> list[Delta_WC_Values]:
         return [
             self._sample()
             for _ in range(n)
@@ -26,38 +34,73 @@ class Sampler:
     
     def _sample(
         self,
-    ) -> WC_Set:
-        return WC_Set(
+    ) -> Delta_WC_Values:
+        return Delta_WC_Values(
             *(
-                uniform(*bounds) 
-                for bounds in self.dist
+                uniform(*interval) 
+                for interval in self.delta_wc_intervals
             )
         )
 
-def _make_metadata_list(
-    wc_samples:list[WC_Set],
-    num_trial_events:int,
-    num_subtrials:int,
+
+class Grid_Sampler:
+    def __init__(
+        self,
+        delta_wc_intervals:Delta_WC_Intervals,
+    ):
+        self.delta_wc_intervals = delta_wc_intervals
+
+    def make_grid(
+        self, 
+        n:Delta_WC_Counts,
+    ):
+        samples = self.sample_per_wc(n)
+        grid = product(*samples)
+        grid = [Delta_WC_Values(*i) for i in grid]
+        return grid
+
+    def sample_per_wc(
+        self,
+        n:Delta_WC_Counts,
+    ) -> list[list[float]]:
+        samples = []
+        for interval, count in zip(
+            self.delta_wc_intervals, 
+            n,
+        ):
+            samples.append(
+                linspace(
+                    interval=interval, 
+                    num_points=count
+                )
+            )
+        return samples
+
+
+def _make_metadatas(
+    delta_wc_samples:list[Delta_WC_Values],
+    num_events_per_trial:int,
+    num_subtrials_per_trial:int,
     split:str,
     lepton_flavor:str,
-    wc_dist:Uniform_WC_Dist,
+    delta_wc_intervals:Delta_WC_Intervals,
 ) -> list[Metadata]:
     return [
         Metadata(
             trial, 
-            num_trial_events, 
-            num_subtrials,
+            num_events_per_trial, 
+            num_subtrials_per_trial,
             split,
             lepton_flavor,
             sample,
-            wc_dist,
+            delta_wc_intervals,
         ) for trial, sample in enumerate( 
-            wc_samples
+            delta_wc_samples
         )
     ]
 
 
-def _make_subdir_name(
+def _make_trial_dir_name(
     metadata:Metadata,
 ) -> str:
     name = (
@@ -66,14 +109,14 @@ def _make_subdir_name(
         f"_{metadata.num_events}"
         f"_{metadata.lepton_flavor}"
     )
-    for wc in astuple(metadata.wc_set):
+    for wc in astuple(metadata.delta_wc_values):
         name += f"_{wc:.2f}"
     return name
 
 
-def _setup_subdirs(
+def _setup_trial_dirs(
     dir_:Path,
-    metadata_list:list[Metadata],
+    metadatas:list[Metadata],
 ) -> None:
     if not dir_.is_dir():
         raise ValueError(
@@ -81,12 +124,12 @@ def _setup_subdirs(
             f" ({dir_})"
         )
     dir_paths = [
-        dir_.joinpath(_make_subdir_name(m)) 
-        for m in metadata_list
+        dir_.joinpath(_make_trial_dir_name(m)) 
+        for m in metadatas
     ]
     for p, m in zip(
         dir_paths, 
-        metadata_list,
+        metadatas,
     ):
         p.mkdir()
         m.to_json_file(
@@ -96,25 +139,26 @@ def _setup_subdirs(
 
 def setup_dir(
     dir_:Path,  
-    wc_samples:list[WC_Set],
-    num_trial_events:int,
-    num_subtrials:int,
+    delta_wc_samples:list[Delta_WC_Values],
+    num_events_per_trial:int,
+    num_subtrials_per_trial:int,
     split:str,
     lepton_flavor:str,
-    wc_dist:Uniform_WC_Dist,
+    delta_wc_intervals:Delta_WC_Intervals,
 ) -> None:
     dir_.mkdir(
-        parents=True, 
+        parents=True,
         exist_ok=False
     )
-    _setup_subdirs(
+    metadatas = _make_metadatas(
+        delta_wc_samples, 
+        num_events_per_trial, 
+        num_subtrials_per_trial, 
+        split, 
+        lepton_flavor, 
+        delta_wc_intervals,
+    )
+    _setup_trial_dirs(
         dir_,
-        _make_metadata_list(
-            wc_samples, 
-            num_trial_events, 
-            num_subtrials, 
-            split, 
-            lepton_flavor, 
-            wc_dist,
-        )
+        metadatas,
     )

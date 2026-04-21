@@ -1,4 +1,5 @@
 
+from typing import Any
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from json import load, dump
@@ -34,8 +35,8 @@ def safer_convert_to_int(
 
 @dataclass
 class Interval:
-    left:float
-    right:float
+    left:float|int
+    right:float|int
     
     def __post_init__(
         self
@@ -45,6 +46,7 @@ class Interval:
                 "Interval left bound must be greater" 
                 " than or equal to right bound."
             )
+        self.is_degenerate = (self.left == self.right)
         
     def __iter__(
         self,
@@ -53,34 +55,72 @@ class Interval:
             self.left, 
             self.right,
         ).__iter__()
+
+
+def linspace(
+    interval:Interval, 
+    num_points:int
+) -> list[float]:
+    if num_points < 1:
+        raise ValueError(
+            "Need at least one point."
+            f" Got: {num_points}"
+        )
+    if num_points == 1 and not interval.is_degenerate:
+        raise ValueError(
+            "Can have one point only if interval is degenerate."
+            " i.e. left bound == right bound."
+        )
+    if num_points == 1:
+        return [float(interval.left)]
+    num_spaces = num_points - 1
+    spacing = (
+        (interval.right - interval.left) 
+        / num_spaces
+    )
+    array_ = []
+    for i in range(num_points):
+        point = (
+            interval.left 
+            + i * spacing
+        )
+        array_.append(point)
+    return array_
+
+
+@dataclass(frozen=True)
+class Delta_WC_Info:
+    dc7: Any
+    dc9: Any
+    dc10: Any
     
-
-@dataclass(frozen=True)
-class WC_Set:
-    d_c_7: float
-    d_c_9: float
-    d_c_10: float
-
     def __iter__(self):
         return (
-            self.d_c_7,
-            self.d_c_9,
-            self.d_c_10,
+            self.dc7,
+            self.dc9,
+            self.dc10,
         ).__iter__()
 
 
 @dataclass(frozen=True)
-class Uniform_WC_Dist:
-    d_c_7: Interval 
-    d_c_9: Interval 
-    d_c_10: Interval 
+class Delta_WC_Values(Delta_WC_Info):
+    dc7: float
+    dc9: float
+    dc10: float
 
-    def __iter__(self):
-        return (
-            self.d_c_7, 
-            self.d_c_9, 
-            self.d_c_10,
-        ).__iter__()
+
+@dataclass(frozen=True)
+class Delta_WC_Counts(Delta_WC_Info):
+    dc7: int
+    dc9: int
+    dc10: int
+
+
+@dataclass(frozen=True)
+class Delta_WC_Intervals(Delta_WC_Info):
+    dc7: Interval 
+    dc9: Interval 
+    dc10: Interval 
 
 
 @dataclass
@@ -90,8 +130,8 @@ class Metadata:
     num_subtrials: int
     split: str
     lepton_flavor: str
-    wc_set: WC_Set
-    wc_dist: Uniform_WC_Dist
+    delta_wc_values: Delta_WC_Values
+    delta_wc_intervals: Delta_WC_Intervals
 
     @property
     def num_subtrial_events(
@@ -119,7 +159,7 @@ class Metadata:
         dict_ = load_json(path)
         for key, cls_ in zip(
             ["wc_set", "wc_dist"], 
-            [WC_Set, Uniform_WC_Dist],
+            [Delta_WC_Values, Delta_WC_Intervals],
         ):
             dict_[key] = cls_(**dict_[key])
         return cls(**dict_)
@@ -144,13 +184,15 @@ class Paths:
         self, 
         subtrial:int|str
     ) -> Path:
-        return self.dir_.joinpath(self.recon_file_name(subtrial))
+        recon_file_name = self.recon_file_name(subtrial)
+        return self.dir_.joinpath(recon_file_name)
     
     def sim_file_path(
         self, 
         subtrial:int|str,
     ) -> Path:
-        return self.dir_.joinpath(self.sim_file_name(subtrial))
+        sim_file_name = self.sim_file_name(subtrial)
+        return self.dir_.joinpath(sim_file_name)
     
     @cached_property
     def decay_file_path(

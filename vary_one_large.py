@@ -6,7 +6,7 @@ Generate Standard Model events.
 from pathlib import Path
 from itertools import product
 
-from helpers import Sampler, Uniform_WC_Dist, Interval, setup_dir, submit_jobs
+from helpers import Random_Sampler, Delta_WC_Intervals, Interval, setup_dir, submit_jobs
 
 
 run_setup = True
@@ -26,18 +26,18 @@ def data_dir(
 
 def dist(
     wc:int
-) -> Uniform_WC_Dist:
+) -> Delta_WC_Intervals:
     if wc == 7:
-        return Uniform_WC_Dist(
-            d_c_7=Interval(-1, 1),
-            d_c_9=Interval(0, 0),
-            d_c_10=Interval(0, 0),
+        return Delta_WC_Intervals(
+            dc7=Interval(-1, 1),
+            dc9=Interval(0, 0),
+            dc10=Interval(0, 0),
         )
     elif wc == 9:
-        return Uniform_WC_Dist(
-            d_c_7=Interval(0, 0),
-            d_c_9=Interval(-10, 0),
-            d_c_10=Interval(0, 0),
+        return Delta_WC_Intervals(
+            dc7=Interval(0, 0),
+            dc9=Interval(-10, 0),
+            dc10=Interval(0, 0),
         )     
     else: 
         raise ValueError()
@@ -55,7 +55,7 @@ if run_setup:
         dist_ = dist(wc)
         dir_ = data_dir(wc, split)
         samples = (
-            Sampler(dist_)
+            Random_Sampler(dist_)
             .sample(num_trials[split])
         )
         setup_dir(

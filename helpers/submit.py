@@ -3,15 +3,15 @@ from pathlib import Path
 from subprocess import run
 from time import sleep
 
-from .util import WC_Set, Metadata, Paths
+from .util import Delta_WC_Values, Metadata, Paths
 
 
 def _write_dec_file(
     path: Path, 
     lepton_flavor: str, 
-    wc_set: WC_Set, 
+    delta_wc_set: Delta_WC_Values, 
 ) -> None:
-
+    
     if lepton_flavor not in ("e", "mu"):
         raise ValueError(
             f"Lepton flavor ({lepton_flavor})" 
@@ -33,7 +33,7 @@ def _write_dec_file(
     Enddecay
 
     Decay MyB0
-    1.000 MyK*0 {lepton_flavor}+ {lepton_flavor}- BTOSLLNPR 0 0 {wc_set.d_c_7} 0 1 {wc_set.d_c_9} 0 2 {wc_set.d_c_10} 0;
+    1.000 MyK*0 {lepton_flavor}+ {lepton_flavor}- BTOSLLNPR 0 0 {delta_wc_set.dc7} 0 1 {delta_wc_set.dc9} 0 2 {delta_wc_set.dc10} 0;
     Enddecay
 
     CDecay MyAntiB0
@@ -76,7 +76,7 @@ def _submit_job(
     )
 
 
-def _check_incomplete(
+def _is_incomplete(
     dir_:Path,
 ) -> bool:
     num_subtrials = Metadata.from_json_file(
@@ -96,7 +96,7 @@ def _get_incomplete_dirs(
     return [
         p.parent
         for p in dir_.rglob(Paths.metadata_file_name)
-        if _check_incomplete(p.parent)
+        if _is_incomplete(p.parent)
     ]
 
 
@@ -123,7 +123,7 @@ def submit_jobs(
         _write_dec_file(
             paths.decay_file_path, 
             metadata.lepton_flavor, 
-            metadata.wc_set
+            metadata.delta_wc_values
         )
         for subtrial in range(metadata.num_subtrials):
             _submit_job(

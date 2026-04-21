@@ -6,7 +6,7 @@ Generate Standard Model events.
 from pathlib import Path
 from itertools import product
 
-from helpers import Sampler, Uniform_WC_Dist, Interval, setup_dir, submit_jobs
+from helpers import Random_Sampler, Delta_WC_Intervals, Interval, setup_dir, submit_jobs
 
 
 run_setup = True
@@ -18,10 +18,10 @@ recon_steer_file_path = Path("steering/steer_recon.py")
 
 data_dir = lambda split: Path(f"data/vary_two_large/vary_c7_c9_{split}/")
 
-dist = Uniform_WC_Dist(
-    d_c_7=Interval(-1, 1),
-    d_c_9=Interval(-10, 0),
-    d_c_10=Interval(0, 0),
+dist = Delta_WC_Intervals(
+    dc7=Interval(-1, 1),
+    dc9=Interval(-10, 0),
+    dc10=Interval(0, 0),
 )
 
 splits = ("train", "val")
@@ -35,7 +35,7 @@ if run_setup:
     for split in splits:
         dir_ = data_dir(split)
         samples = (
-            Sampler(dist)
+            Random_Sampler(dist)
             .sample(num_trials[split])
         )
         setup_dir(
