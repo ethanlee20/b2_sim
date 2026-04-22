@@ -182,14 +182,14 @@ class Paths:
     
     def recon_file_path(
         self, 
-        subtrial:int|str
+        subtrial:int
     ) -> Path:
         recon_file_name = self.recon_file_name(subtrial)
         return self.dir_.joinpath(recon_file_name)
-    
+    ``
     def sim_file_path(
         self, 
-        subtrial:int|str,
+        subtrial:int,
     ) -> Path:
         sim_file_name = self.sim_file_name(subtrial)
         return self.dir_.joinpath(sim_file_name)
