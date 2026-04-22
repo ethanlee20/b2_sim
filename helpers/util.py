@@ -124,7 +124,7 @@ class Delta_WC_Intervals(Delta_WC_Info):
 
 
 @dataclass
-class Metadata:
+class Trial_Metadata:
     trial_num: int
     num_events: int
     num_subtrials: int
@@ -134,7 +134,7 @@ class Metadata:
     delta_wc_intervals: Delta_WC_Intervals
 
     @property
-    def num_subtrial_events(
+    def num_events_per_subtrial(
         self,
     ) -> int:
         return safer_convert_to_int(

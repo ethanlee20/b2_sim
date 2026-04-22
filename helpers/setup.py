@@ -8,7 +8,7 @@ from .util import (
     Delta_WC_Values, 
     Delta_WC_Counts,
     Delta_WC_Intervals, 
-    Metadata, 
+    Trial_Metadata, 
     Paths, 
     linspace,
 )
@@ -84,9 +84,9 @@ def _make_metadatas(
     split:str,
     lepton_flavor:str,
     delta_wc_intervals:Delta_WC_Intervals,
-) -> list[Metadata]:
+) -> list[Trial_Metadata]:
     return [
-        Metadata(
+        Trial_Metadata(
             trial, 
             num_events_per_trial, 
             num_subtrials_per_trial,
@@ -101,7 +101,7 @@ def _make_metadatas(
 
 
 def _make_trial_dir_name(
-    metadata:Metadata,
+    metadata:Trial_Metadata,
 ) -> str:
     name = (
         f"{metadata.trial_num}"
@@ -116,7 +116,7 @@ def _make_trial_dir_name(
 
 def _setup_trial_dirs(
     dir_:Path,
-    metadatas:list[Metadata],
+    metadatas:list[Trial_Metadata],
 ) -> None:
     if not dir_.is_dir():
         raise ValueError(

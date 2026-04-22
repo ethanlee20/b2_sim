@@ -3,13 +3,13 @@ from pathlib import Path
 from subprocess import run
 from time import sleep
 
-from .util import Delta_WC_Values, Metadata, Paths
+from .util import Delta_WC_Values, Trial_Metadata, Paths
 
 
 def _write_dec_file(
     path: Path, 
     lepton_flavor: str, 
-    delta_wc_set: Delta_WC_Values, 
+    delta_wc_values: Delta_WC_Values, 
 ) -> None:
     
     if lepton_flavor not in ("e", "mu"):
@@ -33,7 +33,7 @@ def _write_dec_file(
     Enddecay
 
     Decay MyB0
-    1.000 MyK*0 {lepton_flavor}+ {lepton_flavor}- BTOSLLNPR 0 0 {delta_wc_set.dc7} 0 1 {delta_wc_set.dc9} 0 2 {delta_wc_set.dc10} 0;
+    1.000 MyK*0 {lepton_flavor}+ {lepton_flavor}- BTOSLLNPR 0 0 {delta_wc_values.dc7} 0 1 {delta_wc_values.dc9} 0 2 {delta_wc_values.dc10} 0;
     Enddecay
 
     CDecay MyAntiB0
@@ -76,10 +76,10 @@ def _submit_job(
     )
 
 
-def _is_incomplete(
+def _trial_dir_is_incomplete(
     dir_:Path,
 ) -> bool:
-    num_subtrials = Metadata.from_json_file(
+    num_subtrials = Trial_Metadata.from_json_file(
         Paths(dir_).metadata_file_path
     ).num_subtrials
     num_recon_files = len(
@@ -90,13 +90,13 @@ def _is_incomplete(
     return False
 
 
-def _get_incomplete_dirs(
+def _get_incomplete_trial_dirs(
     dir_:Path
 ) -> list[Path]:
     return [
         p.parent
         for p in dir_.rglob(Paths.metadata_file_name)
-        if _is_incomplete(p.parent)
+        if _trial_dir_is_incomplete(p.parent)
     ]
 
 
@@ -115,9 +115,9 @@ def submit_jobs(
             f" ({dir_})."
         )
     num_submitted_jobs = 0
-    for p in _get_incomplete_dirs(dir_):
+    for p in _get_incomplete_trial_dirs(dir_):
         paths = Paths(p)
-        metadata = Metadata.from_json_file(
+        metadata = Trial_Metadata.from_json_file(
             paths.metadata_file_path
         )
         _write_dec_file(
@@ -128,7 +128,7 @@ def submit_jobs(
         for subtrial in range(metadata.num_subtrials):
             _submit_job(
                 metadata.lepton_flavor,
-                metadata.num_subtrial_events,
+                metadata.num_events_per_subtrial,
                 sim_steer_file_path,
                 recon_steer_file_path,
                 paths.decay_file_path,
