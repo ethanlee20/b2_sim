@@ -158,7 +158,7 @@ class Metadata:
     ):
         dict_ = load_json(path)
         for key, cls_ in zip(
-            ["wc_set", "wc_dist"], 
+            ["delta_wc_values", "delta_wc_intervals"], 
             [Delta_WC_Values, Delta_WC_Intervals],
         ):
             dict_[key] = cls_(**dict_[key])

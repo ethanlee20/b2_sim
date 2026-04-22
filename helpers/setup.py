@@ -50,16 +50,16 @@ class Grid_Sampler:
     ):
         self.delta_wc_intervals = delta_wc_intervals
 
-    def make_grid(
+    def sample(
         self, 
         n:Delta_WC_Counts,
     ):
-        samples = self.sample_per_wc(n)
+        samples = self._sample_per_wc(n)
         grid = product(*samples)
         grid = [Delta_WC_Values(*i) for i in grid]
         return grid
 
-    def sample_per_wc(
+    def _sample_per_wc(
         self,
         n:Delta_WC_Counts,
     ) -> list[list[float]]:
