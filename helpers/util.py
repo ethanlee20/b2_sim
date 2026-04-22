@@ -186,7 +186,7 @@ class Paths:
     ) -> Path:
         recon_file_name = self.recon_file_name(subtrial)
         return self.dir_.joinpath(recon_file_name)
-    ``
+    
     def sim_file_path(
         self, 
         subtrial:int,
