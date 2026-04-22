@@ -60,7 +60,7 @@ class Interval:
 def linspace(
     interval:Interval, 
     num_points:int
-) -> list[float]:
+) -> list:
     if num_points < 1:
         raise ValueError(
             "Need at least one point."
