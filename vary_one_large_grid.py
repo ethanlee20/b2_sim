@@ -18,7 +18,7 @@ from helpers import (
 
 run_setup = True
 run_submit = True
-debug = True
+debug = False
 
 data_dir = lambda split : Path(f"data/vary_one_large_grid/vary_c9_{split}")
 

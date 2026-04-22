@@ -35,8 +35,8 @@ def safer_convert_to_int(
 
 @dataclass
 class Interval:
-    left:float|int
-    right:float|int
+    left:float
+    right:float
     
     def __post_init__(
         self
