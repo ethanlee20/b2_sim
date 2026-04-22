@@ -35,8 +35,8 @@ def safer_convert_to_int(
 
 @dataclass
 class Interval:
-    left:float
-    right:float
+    left:float|int
+    right:float|int
     
     def __post_init__(
         self
@@ -60,7 +60,7 @@ class Interval:
 def linspace(
     interval:Interval, 
     num_points:int
-) -> list:
+) -> list[float]:
     if num_points < 1:
         raise ValueError(
             "Need at least one point."
@@ -144,7 +144,7 @@ class Metadata:
     
     def to_json_file(
         self, 
-        path,
+        path:Path,
     ) -> None:
         dump_json(
             asdict(self), 

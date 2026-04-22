@@ -1,3 +1,6 @@
+# /// script
+# requires-python = ">=3.14"
+# ///
 
 """
 Generate Standard Model events.

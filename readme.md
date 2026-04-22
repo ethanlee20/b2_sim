@@ -11,5 +11,5 @@ b2setup
 then run using 
 
 ```
-python3 <script>
+uv run <script>
 ```
