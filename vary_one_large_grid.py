@@ -23,7 +23,7 @@ run_setup = True
 run_submit = True
 debug = False
 
-data_dir = lambda split : Path(f"data/vary_one_large_grid/vary_c9_{split}")
+data_dir = lambda split : Path(f"data/vary_one_large_grid/vary_dc9_{split}")
 
 sim_steer_file_path = Path("steering/steer_sim.py")
 recon_steer_file_path = Path("steering/steer_recon.py")
@@ -46,10 +46,10 @@ samplers = {
 counts = {
     "train": Delta_WC_Counts(
         dc7=1,
-        dc9=3,
+        dc9=1_000,
         dc10=1,
     ),
-    "val": 2,
+    "val": 10,
 }
 
 samples = {
