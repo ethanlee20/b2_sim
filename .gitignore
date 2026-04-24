@@ -8,5 +8,6 @@ __pycache__
 
 # track these file types
 !*.py
+!*.bash
 !*.gitignore
 !readme.md
