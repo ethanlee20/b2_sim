@@ -1,5 +1,3 @@
-set -x
-
 function my_script_main()
 {
     local original_dir = "$PWD"
