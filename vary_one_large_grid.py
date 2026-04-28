@@ -46,7 +46,7 @@ samplers = {
 counts = {
     "train": Delta_WC_Counts(
         dc7=1,
-        dc9=1_000,
+        dc9=100,
         dc10=1,
     ),
     "val": 10,
