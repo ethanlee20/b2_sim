@@ -1,6 +1,6 @@
 function my_script_main()
 {
-    local original_dir = "$PWD"
+    local original_dir="$PWD"
     cd /home/belle/sibid/belle2
     source tools/b2setup
     cd release
