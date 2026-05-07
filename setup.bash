@@ -3,7 +3,7 @@ function my_script_main()
     local original_dir="$PWD"
     cd /home/belle/sibid/belle2
     source tools/b2setup
-    cd release
+    cd release-08-03-00
     b2setup
     cd $original_dir
 }
