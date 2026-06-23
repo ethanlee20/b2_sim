@@ -1,4 +1,3 @@
-
 import sys
 
 import basf2 as b2
@@ -7,7 +6,6 @@ from variables import collections as vc
 from variables import utils as vu
 from variables import variables as vm
 import vertex as vx
-
 
 # command line options
 
@@ -44,26 +42,26 @@ def define_aliases():
     vm.addAlias("invM_Kst", "0.892")
     vm.addAlias("fullwidth_Kst", "0.05")
 
-    vm.addAlias('tfChiSq', 'extraInfo(chiSquared)')
-    vm.addAlias('tfNdf', 'extraInfo(ndf)')
-    vm.addAlias('tfRedChiSq', 'formula(tfChiSq / tfNdf)')
-    vm.addAlias('tfRedChiSqB0', 'extraInfo(tfRedChiSqB0)')
+    vm.addAlias("tfChiSq", "extraInfo(chiSquared)")
+    vm.addAlias("tfNdf", "extraInfo(ndf)")
+    vm.addAlias("tfRedChiSq", "formula(tfChiSq / tfNdf)")
+    vm.addAlias("tfRedChiSqB0", "extraInfo(tfRedChiSqB0)")
 
-    vm.addAlias('CMS3_weMissM2', 'weMissM2(my_mask,3)')
+    vm.addAlias("CMS3_weMissM2", "weMissM2(my_mask,3)")
 
-    vm.addAlias('mcMother_mcPDG', 'mcMother(mcPDG)')
-    vm.addAlias('mcSister_0_mcPDG', 'mcMother(mcDaughter(0, mcPDG))')
-    vm.addAlias('mcSister_1_mcPDG', 'mcMother(mcDaughter(1, mcPDG))')
-    vm.addAlias('mcSister_2_mcPDG', 'mcMother(mcDaughter(2, mcPDG))')
-    vm.addAlias('mcSister_3_mcPDG', 'mcMother(mcDaughter(3, mcPDG))')
-    vm.addAlias('mcSister_4_mcPDG', 'mcMother(mcDaughter(4, mcPDG))')
-    vm.addAlias('mcSister_5_mcPDG', 'mcMother(mcDaughter(5, mcPDG))')
-    vm.addAlias('mcSister_6_mcPDG', 'mcMother(mcDaughter(6, mcPDG))')
-    vm.addAlias('mcSister_7_mcPDG', 'mcMother(mcDaughter(7, mcPDG))')
-    vm.addAlias('mcSister_8_mcPDG', 'mcMother(mcDaughter(8, mcPDG))')
-    vm.addAlias('mcSister_9_mcPDG', 'mcMother(mcDaughter(9, mcPDG))')    
+    vm.addAlias("mcMother_mcPDG", "mcMother(mcPDG)")
+    vm.addAlias("mcSister_0_mcPDG", "mcMother(mcDaughter(0, mcPDG))")
+    vm.addAlias("mcSister_1_mcPDG", "mcMother(mcDaughter(1, mcPDG))")
+    vm.addAlias("mcSister_2_mcPDG", "mcMother(mcDaughter(2, mcPDG))")
+    vm.addAlias("mcSister_3_mcPDG", "mcMother(mcDaughter(3, mcPDG))")
+    vm.addAlias("mcSister_4_mcPDG", "mcMother(mcDaughter(4, mcPDG))")
+    vm.addAlias("mcSister_5_mcPDG", "mcMother(mcDaughter(5, mcPDG))")
+    vm.addAlias("mcSister_6_mcPDG", "mcMother(mcDaughter(6, mcPDG))")
+    vm.addAlias("mcSister_7_mcPDG", "mcMother(mcDaughter(7, mcPDG))")
+    vm.addAlias("mcSister_8_mcPDG", "mcMother(mcDaughter(8, mcPDG))")
+    vm.addAlias("mcSister_9_mcPDG", "mcMother(mcDaughter(9, mcPDG))")
 
-    vm.addAlias('e_id_BDT', 'pidChargedBDTScore(11, ALL)')
+    vm.addAlias("e_id_BDT", "pidChargedBDTScore(11, ALL)")
 
 
 def input_to_the_path():
@@ -82,12 +80,14 @@ def reconstruct_generator_level():
     ma.fillParticleListFromMC(decayString=f"{e_or_mu}+:gen", cut="", path=main)
 
     ma.reconstructMCDecay("K*0:gen =direct=> K+:gen pi-:gen", cut="", path=main)
-    ma.reconstructMCDecay(f"B0:gen =direct=> K*0:gen {e_or_mu}+:gen {e_or_mu}-:gen", cut="", path=main)
+    ma.reconstructMCDecay(
+        f"B0:gen =direct=> K*0:gen {e_or_mu}+:gen {e_or_mu}-:gen", cut="", path=main
+    )
 
 
 def reconstruct_detector_level():
 
-    marker = '?addbrems' if e_or_mu == 'e' else ''
+    marker = "?addbrems" if e_or_mu == "e" else ""
 
     # online cuts, apply some offline cuts later
 
@@ -95,14 +95,16 @@ def reconstruct_detector_level():
     dr_cut = "[dr < 2]"
 
     muonID_cut = "[muonID > 0.8]"
-    muon_p_cut = "[p > 0.6]" 
+    muon_p_cut = "[p > 0.6]"
 
     electronID_cut = "[e_id_BDT > 0.8]"
     electron_p_cut = "[p > 0.2]"
 
     kaonID_cut = "[kaonID > 0.8]"
 
-    invMKst_cut = "[abs(formula(daughterInvM(0, 1) - invM_Kst)) <= formula(2 * fullwidth_Kst)]"
+    invMKst_cut = (
+        "[abs(formula(daughterInvM(0, 1) - invM_Kst)) <= formula(2 * fullwidth_Kst)]"
+    )
 
     deltaE_cut = "[abs(deltaE) < 0.2]"
     Mbc_cut = "[Mbc > 4.5]"
@@ -115,37 +117,33 @@ def reconstruct_detector_level():
 
     pion_cut = f"{dr_cut} and {dz_cut} and thetaInCDCAcceptance"
 
-    if e_or_mu == 'e':
+    if e_or_mu == "e":
 
-        ma.fillParticleList(decayString="e+:raw", cut='', path=main)
+        ma.fillParticleList(decayString="e+:raw", cut="", path=main)
 
         ma.fillParticleList(decayString="gamma:brems", cut="goodGamma", path=main)
         ma.correctBrems("e+:det", "e+:raw", "gamma:brems", path=main)
 
-        ma.applyChargedPidMVA(['e+:det'], path=main, trainingMode=1)
+        ma.applyChargedPidMVA(["e+:det"], path=main, trainingMode=1)
         ma.applyCuts("e+:det", electron_cut, path=main)
 
-    elif e_or_mu == 'mu':
+    elif e_or_mu == "mu":
 
         ma.fillParticleList(decayString="mu+:det", cut=muon_cut, path=main)
 
-    else: 
-        
+    else:
+
         raise ValueError
 
     ma.fillParticleList(decayString="K+:det", cut=kaon_cut, path=main)
     ma.fillParticleList(decayString="pi-:det", cut=pion_cut, path=main)
 
-    ma.reconstructDecay(
-        "K*0:det =direct=> K+:det pi-:det", 
-        cut=invMKst_cut, 
-        path=main
-    )
+    ma.reconstructDecay("K*0:det =direct=> K+:det pi-:det", cut=invMKst_cut, path=main)
 
     ma.reconstructDecay(
-        f"B0:det =direct=> K*0:det {e_or_mu}+:det {e_or_mu}-:det {marker}", 
-        cut=f"{deltaE_cut} and {Mbc_cut}", 
-        path=main
+        f"B0:det =direct=> K*0:det {e_or_mu}+:det {e_or_mu}-:det {marker}",
+        cut=f"{deltaE_cut} and {Mbc_cut}",
+        path=main,
     )
 
     ma.matchMCTruth("B0:det", path=main)
@@ -153,30 +151,41 @@ def reconstruct_detector_level():
 
 def treefit():
 
-    vx.treeFit('B0:det', conf_level=0.00, updateAllDaughters=True, ipConstraint=True, path=main)
-    ma.variablesToExtraInfo('B0:det', {'tfRedChiSq':'tfRedChiSqB0'}, option=0, path=main)
+    vx.treeFit(
+        "B0:det", conf_level=0.00, updateAllDaughters=True, ipConstraint=True, path=main
+    )
+    ma.variablesToExtraInfo(
+        "B0:det", {"tfRedChiSq": "tfRedChiSqB0"}, option=0, path=main
+    )
 
 
 def rest_of_event():
 
     # build the ROE
-    ma.buildRestOfEvent('B0:det', fillWithMostLikely=True, path=main)
+    ma.buildRestOfEvent("B0:det", fillWithMostLikely=True, path=main)
 
-    loose_track = 'dr<10 and abs(dz)<20 and thetaInCDCAcceptance and E<5.5' 
+    loose_track = "dr<10 and abs(dz)<20 and thetaInCDCAcceptance and E<5.5"
     loose_gamma = "0.05 < clusterE < 5.5"
-    tight_track = f'nCDCHits>=0 and thetaInCDCAcceptance and pValue>=0.0005 and \
+    tight_track = f"nCDCHits>=0 and thetaInCDCAcceptance and pValue>=0.0005 and \
                     [pt<0.15 and formula(dr**2/36+dz**2/16)<1] or \
                     [0.15<pt<0.25 and formula(dr**2/49+dz**2/64)<1] or \
                     [0.25<pt<0.5 and formula(dr**2/49+dz**2/16)<1] or \
                     [0.5<pt<1 and formula(dr**2/25+dz**2/36)<1] or \
-                    [pt>1 and formula(dr**2+dz**2)<1]'
-    tight_gamma = f'clusterE>0.05 and abs(clusterTiming)<formula(2*clusterErrorTiming) and abs(clusterTiming)<200'
-    roe_mask1 = ('my_mask',  loose_track, loose_gamma)
-    ma.appendROEMasks('B0:det', [roe_mask1], path=main)
+                    [pt>1 and formula(dr**2+dz**2)<1]"
+    tight_gamma = f"clusterE>0.05 and abs(clusterTiming)<formula(2*clusterErrorTiming) and abs(clusterTiming)<200"
+    roe_mask1 = ("my_mask", loose_track, loose_gamma)
+    ma.appendROEMasks("B0:det", [roe_mask1], path=main)
 
     # creates V0 particle lists and uses V0 candidates to update/optimize the Rest Of Event
-    ma.updateROEUsingV0Lists('B0:det', mask_names='my_mask', default_cleanup=True, selection_cuts=None,
-                            apply_mass_fit=True, fitter='treefit', path=main)
+    ma.updateROEUsingV0Lists(
+        "B0:det",
+        mask_names="my_mask",
+        default_cleanup=True,
+        selection_cuts=None,
+        apply_mass_fit=True,
+        fitter="treefit",
+        path=main,
+    )
     ma.updateROEMask("B0:det", "my_mask", tight_track, tight_gamma, path=main)
 
 
@@ -191,16 +200,27 @@ def create_variable_lists():
         vc.deltae_mbc
         + vc.inv_mass
         + vc.mc_truth
-        + ['mcMother_mcPDG']
-        + ['PDG']
-        + ['mcSister_0_mcPDG', 'mcSister_1_mcPDG', 'mcSister_2_mcPDG', 'mcSister_3_mcPDG', 'mcSister_4_mcPDG', 'mcSister_5_mcPDG', 'mcSister_6_mcPDG', 'mcSister_7_mcPDG', 'mcSister_8_mcPDG', 'mcSister_9_mcPDG']
+        + ["mcMother_mcPDG"]
+        + ["PDG"]
+        + [
+            "mcSister_0_mcPDG",
+            "mcSister_1_mcPDG",
+            "mcSister_2_mcPDG",
+            "mcSister_3_mcPDG",
+            "mcSister_4_mcPDG",
+            "mcSister_5_mcPDG",
+            "mcSister_6_mcPDG",
+            "mcSister_7_mcPDG",
+            "mcSister_8_mcPDG",
+            "mcSister_9_mcPDG",
+        ]
         + vc.pid
         + vc.kinematics
         + vc.mc_kinematics
-        + ['dr', 'dz']
-        + ['theta', 'thetaErr', 'mcTheta']
-        + ['isSignalAcceptBremsPhotons']
-        + ['CMS3_weMissM2']
+        + ["dr", "dz"]
+        + ["theta", "thetaErr", "mcTheta"]
+        + ["isSignalAcceptBremsPhotons"]
+        + ["CMS3_weMissM2"]
     )
 
     Kstar0_vars = vu.create_aliases_for_selected(
@@ -215,18 +235,12 @@ def create_variable_lists():
     )
 
     lepton_vars = vu.create_aliases_for_selected(
-        list_of_variables=std_vars + ['e_id_BDT'],
+        list_of_variables=std_vars + ["e_id_BDT"],
         decay_string=f"B0 -> [K*0 -> K+ pi-] ^{e_or_mu}+ ^{e_or_mu}-",
         prefix=[f"{e_or_mu}_p", f"{e_or_mu}_m"],
     )
 
-    B0_vars = (
-        std_vars
-        + ['tfRedChiSqB0']
-        + Kstar0_vars
-        + K_pi_vars 
-        + lepton_vars
-    )
+    B0_vars = std_vars + ["tfRedChiSqB0"] + Kstar0_vars + K_pi_vars + lepton_vars
 
     return B0_vars
 

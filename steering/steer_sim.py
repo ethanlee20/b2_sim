@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -9,7 +8,6 @@ import simulation as si
 import reconstruction as re
 import mdst as mdst
 import glob as glob
-
 
 path_file_dec = sys.argv[1]
 path_file_out = sys.argv[2]
@@ -22,9 +20,13 @@ print(f"Number of events: {n_events}")
 print("-----------------------\n")
 
 # background (collision) files
-bg = glob.glob('/group/belle2/dataprod/BGOverlay/early_phase3/release-06-00-05/overlay/BGx1/set0/*.root')
+bg = glob.glob(
+    "/group/belle2/dataprod/BGOverlay/early_phase3/release-06-00-05/overlay/BGx1/set0/*.root"
+)
 # background if running locally
-bg_local = glob.glob('/group/belle2/dataprod/BGOverlay/early_phase3/release-06-00-05/overlay/BGx1/set0/*.root')
+bg_local = glob.glob(
+    "/group/belle2/dataprod/BGOverlay/early_phase3/release-06-00-05/overlay/BGx1/set0/*.root"
+)
 
 # set database conditions (in addition to default)
 b2.conditions.prepend_globaltag("mc_production_MC15ri_a")
@@ -38,7 +40,7 @@ main.add_module("EventInfoSetter", expList=1003, runList=0, evtNumList=n_events)
 
 # generate events from decfile
 print("Add EvtGenInput")
-main.add_module('EvtGenInput', userDECFile=b2.find_file(path_file_dec))
+main.add_module("EvtGenInput", userDECFile=b2.find_file(path_file_dec))
 
 # detector simulation
 # print("Add simulation")

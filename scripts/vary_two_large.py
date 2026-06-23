@@ -1,13 +1,10 @@
-
 """
 Generate Standard Model events.
 """
 
 from pathlib import Path
-from itertools import product
 
 from helpers import Random_Sampler, Delta_WC_Intervals, Interval, setup_dir, submit_jobs
-
 
 run_setup = True
 run_submit = True
@@ -34,23 +31,20 @@ lepton_flavor = "mu"
 if run_setup:
     for split in splits:
         dir_ = data_dir(split)
-        samples = (
-            Random_Sampler(dist)
-            .sample(num_trials[split])
-        )
+        samples = Random_Sampler(dist).sample(num_trials[split])
         setup_dir(
-            dir_, 
-            samples, 
-            num_trial_events[split], 
-            num_subtrials, 
-            split, 
-            lepton_flavor, 
+            dir_,
+            samples,
+            num_trial_events[split],
+            num_subtrials,
+            split,
+            lepton_flavor,
             dist,
         )
         if run_submit:
             submit_jobs(
-                dir_, 
-                sim_steer_file_path, 
-                recon_steer_file_path, 
+                dir_,
+                sim_steer_file_path,
+                recon_steer_file_path,
                 debug=debug,
             )

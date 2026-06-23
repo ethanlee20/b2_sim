@@ -1,13 +1,4 @@
-*
-!*/
 
-
-# ignore these directories
 __pycache__
 .env
-
-# track these file types
-!*.py
-!*.bash
-!*.gitignore
-!readme.md
+.DS_Store

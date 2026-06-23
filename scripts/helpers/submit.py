@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from subprocess import run
 from time import sleep
@@ -7,17 +6,14 @@ from .util import Delta_WC_Values, Trial_Metadata, Paths
 
 
 def _write_dec_file(
-    path: Path, 
-    lepton_flavor: str, 
-    delta_wc_values: Delta_WC_Values, 
+    path: Path,
+    lepton_flavor: str,
+    delta_wc_values: Delta_WC_Values,
 ) -> None:
-    
+
     if lepton_flavor not in ("e", "mu"):
-        raise ValueError(
-            f"Lepton flavor ({lepton_flavor})" 
-            " must be 'e' or 'mu'."
-        )
-    
+        raise ValueError(f"Lepton flavor ({lepton_flavor})" " must be 'e' or 'mu'.")
+
     content = f"""
     Alias MyB0 B0
     Alias MyAntiB0 anti-B0
@@ -52,23 +48,23 @@ def _write_dec_file(
 
 
 def _submit_job(
-    lepton_flavor:str,
-    num_events:int,
-    sim_steer_file_path:Path,
-    recon_steer_file_path:Path,
-    decay_file_path:Path,
-    sim_file_path:Path,
-    recon_file_path:Path,
-    log_file_path:Path,
-    debug:bool=False,
+    lepton_flavor: str,
+    num_events: int,
+    sim_steer_file_path: Path,
+    recon_steer_file_path: Path,
+    decay_file_path: Path,
+    sim_file_path: Path,
+    recon_file_path: Path,
+    log_file_path: Path,
+    debug: bool = False,
 ) -> None:
     command = (
         f'bsub -q l "basf2 {sim_steer_file_path} -- {decay_file_path} {sim_file_path} {num_events} &>> {log_file_path}'
-        f' && basf2 {recon_steer_file_path} {lepton_flavor} {sim_file_path} {recon_file_path} &>> {log_file_path}'
+        f" && basf2 {recon_steer_file_path} {lepton_flavor} {sim_file_path} {recon_file_path} &>> {log_file_path}"
         f' && rm {sim_file_path}"'
     )
     if debug:
-        print(command, '\n')
+        print(command, "\n")
         return
     run(
         command,
@@ -77,22 +73,18 @@ def _submit_job(
 
 
 def _trial_dir_is_incomplete(
-    dir_:Path,
+    dir_: Path,
 ) -> bool:
     num_subtrials = Trial_Metadata.from_json_file(
         Paths(dir_).metadata_file_path
     ).num_subtrials
-    num_recon_files = len(
-        list(dir_.glob(Paths.recon_file_name("*")))
-    )
+    num_recon_files = len(list(dir_.glob(Paths.recon_file_name("*"))))
     if num_subtrials != num_recon_files:
         return True
     return False
 
 
-def _get_incomplete_trial_dirs(
-    dir_:Path
-) -> list[Path]:
+def _get_incomplete_trial_dirs(dir_: Path) -> list[Path]:
     return [
         p.parent
         for p in dir_.rglob(Paths.metadata_file_name)
@@ -101,29 +93,22 @@ def _get_incomplete_trial_dirs(
 
 
 def submit_jobs(
-    dir_:Path,
-    sim_steer_file_path:Path,
-    recon_steer_file_path:Path,
-    batch_size:int=200, 
-    batch_wait:int=30,
-    job_wait:int|float=0.1,
-    debug:bool=False,
+    dir_: Path,
+    sim_steer_file_path: Path,
+    recon_steer_file_path: Path,
+    batch_size: int = 200,
+    batch_wait: int = 30,
+    job_wait: int | float = 0.1,
+    debug: bool = False,
 ) -> None:
     if not dir_.is_dir():
-        raise ValueError(
-            "Data directory is not directory:"
-            f" ({dir_})."
-        )
+        raise ValueError("Data directory is not directory:" f" ({dir_}).")
     num_submitted_jobs = 0
     for p in _get_incomplete_trial_dirs(dir_):
         paths = Paths(p)
-        metadata = Trial_Metadata.from_json_file(
-            paths.metadata_file_path
-        )
+        metadata = Trial_Metadata.from_json_file(paths.metadata_file_path)
         _write_dec_file(
-            paths.decay_file_path, 
-            metadata.lepton_flavor, 
-            metadata.delta_wc_values
+            paths.decay_file_path, metadata.lepton_flavor, metadata.delta_wc_values
         )
         for subtrial in range(metadata.num_subtrials):
             _submit_job(
