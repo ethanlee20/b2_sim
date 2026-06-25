@@ -13,39 +13,35 @@ from .util import (
 )
 
 
+def set_random_seed(seed_: int | None = None):
+    seed(seed_)
+
+
+@dataclass
 class Random_Sampler:
-    def __init__(
-        self,
-        delta_wc_intervals: Delta_WC_Intervals,
-        seed_: int | None = None,
-    ):
-        seed(seed_)
-        self.delta_wc_intervals = delta_wc_intervals
+    bounds: DeltaWCBounds
 
     def sample(
         self,
         n: int,
-    ) -> list[Delta_WC_Values]:
-        return [self._sample() for _ in range(n)]
+    ) -> list[DeltaWCValues]:
+        out = [self._sample_once() for _ in range(n)]
+        return out
 
-    def _sample(
+    def _sample_once(
         self,
-    ) -> Delta_WC_Values:
-        return Delta_WC_Values(
-            *(uniform(*interval) for interval in self.delta_wc_intervals)
-        )
+    ) -> DeltaWCValues:
+        out = uniform(*b) for b in self.bounds
+        return out
+        
 
-
+@dataclass
 class Grid_Sampler:
-    def __init__(
-        self,
-        delta_wc_intervals: Delta_WC_Intervals,
-    ):
-        self.delta_wc_intervals = delta_wc_intervals
+    bounds: DeltaWCBounds
 
     def sample(
         self,
-        n: Delta_WC_Counts,
+        counts: DeltaWCCounts
     ):
         samples = self._sample_per_wc(n)
         grid = product(*samples)
@@ -55,7 +51,7 @@ class Grid_Sampler:
     def _sample_per_wc(
         self,
         n: Delta_WC_Counts,
-    ) -> list[list[float]]:
+    ) -> list[tuple[float, ...]]:
         samples = []
         for interval, count in zip(
             self.delta_wc_intervals,
@@ -63,6 +59,9 @@ class Grid_Sampler:
         ):
             samples.append(linspace(interval=interval, num_points=count))
         return samples
+
+    def _sample(self, n:int, ) -> tuple[float, ...]:
+        linspace() 
 
 
 def _make_metadatas(
