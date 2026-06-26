@@ -5,14 +5,14 @@ from time import sleep
 from .util import Delta_WC_Values, Trial_Metadata, Paths
 
 
-def _write_dec_file(
-    path: Path,
+def write_dec_file(
+    path: Path|str,
     lepton_flavor: str,
-    delta_wc_values: Delta_WC_Values,
+    delta_wc_values: DeltaWCValues,
 ) -> None:
 
     if lepton_flavor not in ("e", "mu"):
-        raise ValueError(f"Lepton flavor ({lepton_flavor})" " must be 'e' or 'mu'.")
+        raise ValueError(f"Lepton flavor must be 'e' or 'mu'.")
 
     content = f"""
     Alias MyB0 B0
@@ -47,15 +47,15 @@ def _write_dec_file(
         file.write(content)
 
 
-def _submit_job(
+def submit_job(
     lepton_flavor: str,
     num_events: int,
-    sim_steer_file_path: Path,
-    recon_steer_file_path: Path,
-    decay_file_path: Path,
-    sim_file_path: Path,
-    recon_file_path: Path,
-    log_file_path: Path,
+    sim_steer_file_path: Path|str,
+    recon_steer_file_path: Path|str,
+    decay_file_path: Path|str,
+    sim_file_path: Path|str,
+    recon_file_path: Path|str,
+    log_file_path: Path|str,
     debug: bool = False,
 ) -> None:
     command = (
@@ -72,58 +72,57 @@ def _submit_job(
     )
 
 
-def _trial_dir_is_incomplete(
-    dir_: Path,
-) -> bool:
-    num_subtrials = Trial_Metadata.from_json_file(
-        Paths(dir_).metadata_file_path
-    ).num_subtrials
-    num_recon_files = len(list(dir_.glob(Paths.recon_file_name("*"))))
-    if num_subtrials != num_recon_files:
-        return True
+def trial_dir_is_incomplete(dir_path: Path|str) -> bool:
+    dir_path = Path(dir_path)
+    trial_metadata = load_metadata_from_dir(TrialMetadata, dir_path)
+    num_subtrials = trial_metadata.num_subtrials
+    for subtrial in range(num_subtrials):
+        recon_file_path = FilePaths(dir_path).recon(subtrial)
+        if not recon_file_path.is_file():
+            return True
     return False
 
 
-def _get_incomplete_trial_dirs(dir_: Path) -> list[Path]:
-    return [
-        p.parent
-        for p in dir_.rglob(Paths.metadata_file_name)
-        if _trial_dir_is_incomplete(p.parent)
+def incomplete_trial_dirs(dir_path: Path|str) -> list[Path]:
+    dir_path = Path(dir_path)
+    out = [
+        child for child in dir_path.iterdir()
+        if child.is_dir() and trial_dir_is_incomplete(child)
     ]
+    return out
 
 
 def submit_jobs(
-    dir_: Path,
-    sim_steer_file_path: Path,
-    recon_steer_file_path: Path,
+    run_dir_path: Path|str,
+    sim_steer_file_path: Path|str,
+    recon_steer_file_path: Path|str,
     batch_size: int = 200,
-    batch_wait: int = 30,
-    job_wait: int | float = 0.1,
+    batch_wait_sec: int = 30,
+    job_wait_sec: int | float = 0.1,
     debug: bool = False,
 ) -> None:
-    if not dir_.is_dir():
-        raise ValueError("Data directory is not directory:" f" ({dir_}).")
-    num_submitted_jobs = 0
-    for p in _get_incomplete_trial_dirs(dir_):
-        paths = Paths(p)
-        metadata = Trial_Metadata.from_json_file(paths.metadata_file_path)
-        _write_dec_file(
-            paths.decay_file_path, metadata.lepton_flavor, metadata.delta_wc_values
+
+    submitted_job_count = 0
+    for trial_dir in incomplete_trial_dirs(run_dir_path):
+        trial_metadata = load_metadata_from_dir(TrialMetadata, trial_dir)
+        trial_file_paths = FilePaths(trial_dir)
+        write_dec_file(
+            trial_file_paths.decay, trial_metadata.lepton_flavor, trial_metadata.delta_wc_values
         )
-        for subtrial in range(metadata.num_subtrials):
+        for subtrial in range(trial_metadata.num_subtrials):
             _submit_job(
-                metadata.lepton_flavor,
-                metadata.num_events_per_subtrial,
+                trial_metadata.lepton_flavor,
+                trial_metadata.num_events_per_subtrial,
                 sim_steer_file_path,
                 recon_steer_file_path,
-                paths.decay_file_path,
-                paths.sim_file_path(subtrial),
-                paths.recon_file_path(subtrial),
-                paths.log_file_path,
+                trial_file_paths.decay,
+                trial_file_paths.sim(subtrial),
+                trial_file_paths.recon(subtrial),
+                trial_file_paths.log,
                 debug=debug,
             )
-            num_submitted_jobs += 1
-            sleep(job_wait)
+            submitted_job_count += 1
+            sleep(job_wait_sec)
 
-            if num_submitted_jobs % batch_size == 0:
-                sleep(batch_wait)
+            if submitted_job_count % batch_size == 0:
+                sleep(batch_wait_sec)

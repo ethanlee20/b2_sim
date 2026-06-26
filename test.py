@@ -35,7 +35,7 @@ def rebuild(cls, dict_):
 
 @dataclass
 class C:
-    c: int
+    c: list
     c_: int
 
 
@@ -53,7 +53,7 @@ class A:
 
 if __name__ == "__main__":
 
-    a = A(B(C(1,2),C(3,4)), B(C(5,6),C(7,8)))
+    a = A(B(C([1,2],2),C([4,4],4)), B(C([5,4],6),C([4,4,4,4],8)))
 
     a_dict = asdict(a)
 

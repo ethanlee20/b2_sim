@@ -77,7 +77,7 @@ def save_dataclass_to_json_file(obj, path):
     dump_json(dict_, path)
 
 
-def linspace(start:float, stop:float, num_points: int) -> list[float]:
+def linspace(start:float, stop:float, num_points: int) -> list[float, ...]:
     if num_points < 1:
         raise ValueError("Need at least two points." f" Got: {num_points} points")
     num_spaces = num_points - 1
@@ -95,15 +95,6 @@ def linspace(start:float, stop:float, num_points: int) -> list[float]:
 Interval:
     left: float
     right: float
-
-    @classmethod
-    def from_dict(cls, dict_):
-        dict_ = {
-            dict_[field_.name]: field_.type(dict_[field_.name]) 
-            for field_ in fields(cls)
-        }
-        out = cls(**dict_)
-        return out
 
     def as_tuple(self):
         return (self.left, self.right)
@@ -152,27 +143,10 @@ class DeltaWCCounts(DeltaWCBase):
 
 
 @dataclass
-class TrialMetadata:
-    trial_num: int
-    num_events: int
-    num_subtrials: int
-    delta_wc_values: DeltaWCValues
-
-
-@dataclass
-class RunMetadata:
-    num_events: int
-    num_trials: int
-    split: str
-    lepton_flavor: str
-    delta_wc_bounds: DeltaWCBounds
-
-
-@dataclass
 class Filenames:
     metadata: Path|str = "metadata.json"
     decay: Path|str = "decay.dec"
-    log: Path|str
+    log: Path|str = "log.log"
 
     @property
     def recon(self, subtrial:int):
@@ -185,35 +159,94 @@ class Filenames:
         return out
 
 
-"""
 @dataclass
-class TrialFilePaths:
+class FilePaths:
     dir_: Path|str
-    filenames: Filenames = field(default_factory=Filenames, )
-
-    @property
-    def decay(self):
-        out = make_path(filenames.decay)
-        return out
-
-    @property
-    def metadata_file_path(self):
-        metadata_filename = "metadata.json"
-        out = self.dir_.joinpath(metadata_filename)
-        return out
-
-    def recon_filename(self, subtrial:int):
-        out = f"recon_{subtrial}.root"
-        return out
-        
-    def sim_filename(self, subtrial:int):
-        out = f"sim_{subtrial}.root"
-        return out
-
-    def make_path(self, filename):
-        out = self.dir_.joinpath(filename)
-        return out
+    metadata: Path = field(init=False)
+    decay: Path = field(init=False)
+    log: Path = field(init=False)
     
     def __post_init__(self):
         self.dir_ = Path(self.dir_)
-"""
+        filenames = Filenames()
+        self.metadata = self.dir_.joinpath(filenames.metadata)
+        self.decay = self.dir_.joinpath(filenames.decay)
+        self.log = self.dir_.joinpath(filenames.log)
+
+    @property
+    def recon(self, subtrial:int):
+        filename = Filenames().recon(subtrial)
+        out = self.dir_.joinpath(filename)
+        return out
+    
+    @property
+    def sim(self, subtrial:int):
+        filename = Filenames().sim(subtrial)
+        out = self.dir_.joinpath(filename)
+        return out
+
+
+@dataclass
+class SubtrialMetadata:
+    subtrial_num: int
+    num_events: int
+    delta_wc_values: DeltaWCValues
+    lepton_flavor: str
+
+
+@dataclass
+class TrialMetadata:
+    trial_num: int
+    num_events: int
+    num_subtrials: int
+    delta_wc_values: DeltaWCValues
+    lepton_flavor: str
+
+    @property
+    def num_events_per_subtrial(self):
+        out = safer_convert_to_int(num_events / num_subtrials)
+        return out
+
+
+@dataclass
+class RunMetadata:
+    split: str
+    num_events: int
+    num_trials: int
+    num_subtrials_per_trial: int
+    lepton_flavor: str
+    delta_wc_bounds: DeltaWCBounds
+
+    @property
+    def num_events_per_trial(self):
+        out = safer_convert_to_int(self.num_events / self.num_trials)
+        return out
+
+    @property
+    def num_events_per_subtrial(self):
+        out = safer_convert_to_int(self.num_events_per_trial/ self.num_subtrials_per_trial)
+
+
+def make_trial_metadata_list(run_metadata: RunMetadata, delta_wc_values_list:list[DeltaWCValues]):
+    out = [
+        TrialMetadata(trial_num, run_metadata.num_events_per_trial, run_metadata.num_subtrials_per_trial, delta_wc_values, run_metadata.lepton_flavor) 
+        for trial_num, delta_wc_values in enumerate(delta_wc_values_list)
+    ] 
+    return out
+
+
+def save_metadata_to_dir(metadata:TrialMetadata|RunMetadata, dir_path:Path|str) -> None:
+    dir_path = Path(dir_path)
+    filename = Filenames().metadata
+    path = dir_path.joinpath(filename)
+    save_dataclass_to_json_file(metadata, path)
+
+
+def load_metadata_from_dir(metadata_cls, dir_path:Path|str) -> RunMetadata|TrialMetadata:
+    dir_path = Path(dir_path)
+    filename = Filenames().metadata
+    path = dir_path.joinpath(filename)
+    out = load_dataclass_from_json_file(metadata_cls, path)
+    return out 
+    
+

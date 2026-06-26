@@ -18,7 +18,7 @@ def set_random_seed(seed_: int | None = None):
 
 
 @dataclass
-class Random_Sampler:
+class RandomSampler:
     bounds: DeltaWCBounds
 
     def sample(
@@ -36,104 +36,60 @@ class Random_Sampler:
         
 
 @dataclass
-class Grid_Sampler:
+class GridSampler:
     bounds: DeltaWCBounds
 
     def sample(
         self,
-        counts: DeltaWCCounts
-    ):
-        samples = self._sample_per_wc(n)
-        grid = product(*samples)
-        grid = [Delta_WC_Values(*i) for i in grid]
-        return grid
+        n: DeltaWCCounts
+    ) -> list[DeltaWCValues]:
+        samples_per_wc = self._samples_per_wc(n)
+        out = product(*samples_per_wc)
+        out = [DeltaWCValues(*vals) for vals in grid]
+        return out
 
-    def _sample_per_wc(
+    def _samples_per_wc(
         self,
-        n: Delta_WC_Counts,
-    ) -> list[tuple[float, ...]]:
-        samples = []
-        for interval, count in zip(
-            self.delta_wc_intervals,
-            n,
-        ):
-            samples.append(linspace(interval=interval, num_points=count))
-        return samples
-
-    def _sample(self, n:int, ) -> tuple[float, ...]:
-        linspace() 
+        n: DeltaWCCounts,
+    ) -> list[list[float, ...], ...]:
+        out = [linspace(*b, n_) for b, n_ in zip(self.bounds, n)]
+        return out
 
 
-def _make_metadatas(
-    delta_wc_samples: list[Delta_WC_Values],
-    num_events_per_trial: int,
-    num_subtrials_per_trial: int,
-    split: str,
-    lepton_flavor: str,
-    delta_wc_intervals: Delta_WC_Intervals,
-) -> list[Trial_Metadata]:
-    return [
-        Trial_Metadata(
-            trial,
-            num_events_per_trial,
-            num_subtrials_per_trial,
-            split,
-            lepton_flavor,
-            sample,
-            delta_wc_intervals,
-        )
-        for trial, sample in enumerate(delta_wc_samples)
-    ]
+def run_dir_name(split: str) -> str:
+    out = f"{split}"
+    return out
 
 
-def _make_trial_dir_name(
-    metadata: Trial_Metadata,
-) -> str:
-    name = (
-        f"{metadata.trial_num}"
-        f"_{metadata.split}"
-        f"_{metadata.num_events}"
-        f"_{metadata.lepton_flavor}"
-    )
-    for wc in astuple(metadata.delta_wc_values):
-        name += f"_{wc:.2f}"
-    return name
+def trial_dir_name(trial_num: int) -> str:
+    out = f"{trial_num}"
+    return out
 
 
-def _setup_trial_dirs(
-    dir_: Path,
-    metadatas: list[Trial_Metadata],
-) -> None:
-    if not dir_.is_dir():
-        raise ValueError("Data directory is not a directory." f" ({dir_})")
-    dir_paths = [dir_.joinpath(_make_trial_dir_name(m)) for m in metadatas]
-    for p, m in zip(
-        dir_paths,
-        metadatas,
-    ):
-        p.mkdir()
-        m.to_json_file(Paths(p).metadata_file_path)
+def run_dir_path(split:str, parent_dir_path:Path) -> Path:
+    name = run_dir_name(split)
+    out = parent_dir_path.joinpath(name)
+    return out
 
 
-def setup_dir(
-    dir_: Path,
-    delta_wc_samples: list[Delta_WC_Values],
-    num_events_per_trial: int,
-    num_subtrials_per_trial: int,
-    split: str,
-    lepton_flavor: str,
-    delta_wc_intervals: Delta_WC_Intervals,
-) -> None:
-    dir_.mkdir(parents=True, exist_ok=False)
-    metadatas = _make_metadatas(
-        delta_wc_samples,
-        num_events_per_trial,
-        num_subtrials_per_trial,
-        split,
-        lepton_flavor,
-        delta_wc_intervals,
-    )
-    _setup_trial_dirs(
-        dir_,
-        metadatas,
-    )
+def trial_dir_path(trial_num: int, parent_dir_path: Path) -> Path:
+    name = trial_dir_name(trial_num)
+    out = parent_dir_path.joinpath(name)
+    return out
+
+
+def setup_trial_dir(trial_metadata: TrialMetadata, parent_dir_path:Path) -> None:
+    trial_num = trial_metadata.trial_num
+    dir_ = trial_dir_path(trial_num, parent_dir_path)
+    dir_.mkdir()
+    save_metadata_to_dir(trial_metadata, dir_,)
+
+
+def setup_run_dir(run_metadata: RunMetadata, delta_wc_values_list:list[DeltaWCValues], parent_dir_path:Path) -> None:
+    split = run_metadata.split
+    dir_ = run_dir_path(split, parent_dir_path)
+    dir_.mkdir()
+    save_metadata_to_dir(run_metadata, dir_,)
+    trial_metadatas = make_trial_metadata_list(run_metadata, delta_wc_values_list)
+    for trial_metadata in trial_metadatas:
+        setup_trial_dir(trial_metadata, dir_)
