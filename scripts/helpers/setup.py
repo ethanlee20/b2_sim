@@ -4,11 +4,11 @@ from random import seed, uniform
 from itertools import product
 
 from .util import (
-    Delta_WC_Values,
-    Delta_WC_Counts,
-    Delta_WC_Intervals,
-    Trial_Metadata,
-    Paths,
+    ParameterValues,
+    ParameterCounts,
+    ParameterIntervals,
+    TrialMetadata,
+    FilePaths,
     linspace,
 )
 
@@ -19,40 +19,44 @@ def set_random_seed(seed_: int | None = None):
 
 @dataclass
 class RandomSampler:
-    bounds: DeltaWCBounds
+    parameter_bounds: ParameterBounds
 
     def sample(
         self,
         n: int,
-    ) -> list[DeltaWCValues]:
+    ) -> list[ParameterValues]:
         out = [self._sample_once() for _ in range(n)]
         return out
 
     def _sample_once(
         self,
-    ) -> DeltaWCValues:
-        out = uniform(*b) for b in self.bounds
+    ) -> ParameterValues:
+        names = self.parameter_bounds.names
+        values = (uniform(*b) for b in self.parameter_bounds.bounds)
+        out = ParameterValues(names=names, values=values)
         return out
         
 
 @dataclass
 class GridSampler:
-    bounds: DeltaWCBounds
+    parameter_bounds: ParameterBounds
 
     def sample(
         self,
-        n: DeltaWCCounts
-    ) -> list[DeltaWCValues]:
+        parameter_counts: ParameterCounts
+    ) -> list[ParameterValues]:
         samples_per_wc = self._samples_per_wc(n)
-        out = product(*samples_per_wc)
-        out = [DeltaWCValues(*vals) for vals in grid]
+        samples = product(*samples_per_wc)
+        names = self.parameter_bounds.names
+        out = [ParameterValues(names=names, values=sample) for sample in samples]
         return out
 
     def _samples_per_wc(
         self,
-        n: DeltaWCCounts,
+        parameter_counts: ParameterCounts,
     ) -> list[list[float, ...], ...]:
-        out = [linspace(*b, n_) for b, n_ in zip(self.bounds, n)]
+        assert parameter_counts.names == self.parameter_bounds.names
+        out = [linspace(*bounds, count) for bounds, count in zip(self.parameter_bounds, parameter_counts.counts)]
         return out
 
 
@@ -85,11 +89,11 @@ def setup_trial_dir(trial_metadata: TrialMetadata, parent_dir_path:Path) -> None
     save_metadata_to_dir(trial_metadata, dir_,)
 
 
-def setup_run_dir(run_metadata: RunMetadata, delta_wc_values_list:list[DeltaWCValues], parent_dir_path:Path) -> None:
+def setup_run_dir(run_metadata: RunMetadata, parameter_values_list:list[ParameterValues], parent_dir_path:Path) -> None:
     split = run_metadata.split
     dir_ = run_dir_path(split, parent_dir_path)
     dir_.mkdir()
     save_metadata_to_dir(run_metadata, dir_,)
-    trial_metadatas = make_trial_metadata_list(run_metadata, delta_wc_values_list)
+    trial_metadatas = make_trial_metadata_list(run_metadata, parameter_values_list)
     for trial_metadata in trial_metadatas:
         setup_trial_dir(trial_metadata, dir_)

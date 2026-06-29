@@ -18,15 +18,17 @@ def load_json(
 ) -> dict:
 
     path = Path(path)
+    if not path.is_file():
+        raise FileNotFoundError
     with open(path, "r") as f:
-        return load(f)
+        out = load(f)
+    return out
 
 
 def dump_json(
     obj: dict,
     path: Path|str,
 ) -> None:
-
     path = Path(path)
     with open(path, "x") as f:
         return dump(
@@ -36,14 +38,14 @@ def dump_json(
         )
 
 
-def read_nested_dict(dict_, keys: list):
+def read_from_nested_dict(dict_, keys: list):
     for key in keys:
         dict_ = dict_[key]
     return dict_
 
 
-def write_nested_dict(dict_, keys:list, value):
-    dict_ = read_nested_dict(dict_, keys[:-1])
+def write_to_nested_dict(dict_, keys:list, value):
+    dict_ = read_from_nested_dict(dict_, keys[:-1])
     dict_[keys[-1]] = value
 
 
@@ -57,7 +59,7 @@ def _rebuild_dataclass(cls, dict_:dict, keys:list|None=None):
     if keys == []:
         out = cls(**dict_)
         return out
-    write_nested_dict(dict_, keys, cls(**read_nested_dict(dict_, keys)))
+    write_to_nested_dict(dict_, keys, cls(**read_from_nested_dict(dict_, keys)))
 
 
 def rebuild_dataclass(cls, dict_:dict):
@@ -106,40 +108,21 @@ Interval:
 
 
 @dataclass
-class DeltaWCBase:
-    dC_7: Any
-    dC_9: Any
-    dC_10: Any
-
-    def as_tuple(self):
-        out = (dC_7, dC_9, dC_10)
-        return out
-
-    def __iter__(self):
-        tuple_ = self.as_tuple()
-        out = tuple_.__iter__()
-        return out
+class ParameterCounts:
+    names: list[str, ...]
+    counts: list[int, ...]
 
 
 @dataclass
-class DeltaWCValues(DeltaWCBase):
-    dC_7: float
-    dC_9: float
-    dC_10: float
+class ParameterValues:
+    names: list[str, ...]
+    values: list[float, ...]
 
 
 @dataclass
-class DeltaWCBounds(DeltaWCBase):
-    dC_7: Interval
-    dC_9: Interval
-    dC_10: Interval
-
-
-@dataclass
-class DeltaWCCounts(DeltaWCBase):
-    dC_7: int
-    dC_9: int
-    dC_10: int
+class ParameterBounds: 
+    names: list[str, ...]
+    bounds: list[Interval, ...]
 
 
 @dataclass
@@ -190,8 +173,7 @@ class FilePaths:
 class SubtrialMetadata:
     subtrial_num: int
     num_events: int
-    delta_wc_values: DeltaWCValues
-    lepton_flavor: str
+    parameter_values: ParameterValues
 
 
 @dataclass
@@ -199,8 +181,7 @@ class TrialMetadata:
     trial_num: int
     num_events: int
     num_subtrials: int
-    delta_wc_values: DeltaWCValues
-    lepton_flavor: str
+    parameter_values: ParameterValues
 
     @property
     def num_events_per_subtrial(self):
@@ -214,8 +195,7 @@ class RunMetadata:
     num_events: int
     num_trials: int
     num_subtrials_per_trial: int
-    lepton_flavor: str
-    delta_wc_bounds: DeltaWCBounds
+    parameter_bounds: ParameterBounds
 
     @property
     def num_events_per_trial(self):
@@ -227,10 +207,10 @@ class RunMetadata:
         out = safer_convert_to_int(self.num_events_per_trial/ self.num_subtrials_per_trial)
 
 
-def make_trial_metadata_list(run_metadata: RunMetadata, delta_wc_values_list:list[DeltaWCValues]):
+def make_trial_metadata_list(run_metadata: RunMetadata, parameter_values_list:list[ParameterValues]):
     out = [
-        TrialMetadata(trial_num, run_metadata.num_events_per_trial, run_metadata.num_subtrials_per_trial, delta_wc_values, run_metadata.lepton_flavor) 
-        for trial_num, delta_wc_values in enumerate(delta_wc_values_list)
+        TrialMetadata(trial_num, run_metadata.num_events_per_trial, run_metadata.num_subtrials_per_trial, parameter_values) 
+        for trial_num, parameter_values in enumerate(parameter_values_list)
     ] 
     return out
 

@@ -1,0 +1,26 @@
+Alias MyB0 B0
+Alias MyAntiB0 anti-B0
+ChargeConj MyB0 MyAntiB0
+
+Alias MyK*0 K*0
+Alias MyAnti-K*0 anti-K*0
+ChargeConj MyK*0 MyAnti-K*0
+
+Decay Upsilon(4S)
+0.500  MyB0 anti-B0    VSS;
+0.500  B0 MyAntiB0    VSS;
+Enddecay
+
+Decay MyB0
+1.000 MyK*0 mu+ mu- BTOSLLNPR 0 0 {dC_7} 0 1 {dC_9} 0 2 {dC_10} 0;
+Enddecay
+
+CDecay MyAntiB0
+
+Decay MyK*0
+1.000 K+ pi-   VSS;
+Enddecay
+
+CDecay MyAnti-K*0
+
+End

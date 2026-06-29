@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# based off of Alexei's steering file
+
+
 import sys
 
 import basf2 as b2
@@ -9,24 +12,21 @@ import reconstruction as re
 import mdst as mdst
 import glob as glob
 
-path_file_dec = sys.argv[1]
-path_file_out = sys.argv[2]
-n_events = int(sys.argv[3])
+
+dec_file_path = sys.argv[1]
+out_file_path = sys.argv[2]
+num_events = int(sys.argv[3])
 
 print("\n-- Simulation Configuration --")
-print(f"Decay file: {path_file_dec}")
-print(f"Output file: {path_file_out}")
-print(f"Number of events: {n_events}")
+print(f"Decay file: {dec_file_path}")
+print(f"Output file: {out_file_path}")
+print(f"Number of events: {num_events}")
 print("-----------------------\n")
 
 # background (collision) files
-bg = glob.glob(
-    "/group/belle2/dataprod/BGOverlay/early_phase3/release-06-00-05/overlay/BGx1/set0/*.root"
-)
+bg = glob.glob("/group/belle2/dataprod/BGOverlay/early_phase3/release-06-00-05/overlay/BGx1/set0/*.root")
 # background if running locally
-bg_local = glob.glob(
-    "/group/belle2/dataprod/BGOverlay/early_phase3/release-06-00-05/overlay/BGx1/set0/*.root"
-)
+bg_local = glob.glob("/group/belle2/dataprod/BGOverlay/early_phase3/release-06-00-05/overlay/BGx1/set0/*.root")
 
 # set database conditions (in addition to default)
 b2.conditions.prepend_globaltag("mc_production_MC15ri_a")
@@ -36,23 +36,23 @@ main = b2.Path()
 
 # default to early phase 3 (exp=1003), run 0
 print("Add EventInfoSetter")
-main.add_module("EventInfoSetter", expList=1003, runList=0, evtNumList=n_events)
+main.add_module("EventInfoSetter", expList=1003, runList=0, evtNumList=num_events)
 
 # generate events from decfile
 print("Add EvtGenInput")
-main.add_module("EvtGenInput", userDECFile=b2.find_file(path_file_dec))
+main.add_module("EvtGenInput", userDECFile=b2.find_file(dec_file_path))
 
 # detector simulation
-# print("Add simulation")
-# si.add_simulation(path=main, bkgfiles=bg)
+print("Add simulation")
+si.add_simulation(path=main, bkgfiles=bg)
 
 # reconstruction
-# print("Add reconstruction")
-# re.add_reconstruction(path=main)
+print("Add reconstruction")
+re.add_reconstruction(path=main)
 
 # Finally add mdst output (file name overwritten on the grid)
 print("Add mdst output")
-mdst.add_mdst_output(path=main, filename=str(path_file_out))
+mdst.add_mdst_output(path=main, filename=str(out_file_path))
 
 # process events and print call statistics
 print("Process")
