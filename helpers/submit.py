@@ -2,7 +2,7 @@ from pathlib import Path
 from subprocess import run
 from time import sleep
 
-from .util import ParameterValues, TrialMetadata, Paths
+from .util import TrialMetadata, load_metadata_from_dir, FilePaths
 
 
 def read_dec_file(path: Path | str) -> str:
@@ -12,17 +12,21 @@ def read_dec_file(path: Path | str) -> str:
 
 
 def format_template_dec_file_string(
-    str_: str, parameter_values: ParameterValues
+    str_: str, parameter_values: dict[str, float]
 ) -> str:
-    format_map = dict(zip(parameter_values.names, parameter_values.values))
+    for parameter_name in parameter_values.keys():
+        if "{" f"{parameter_name}" "}" not in str_:
+            raise ValueError(
+                f"Parameter name not found in decay file string: {parameter_name}"
+            )
     try:
-        out = str_.format(**format_map)
+        out = str_.format(**parameter_values)
         return out
     except KeyError:
-        raise ValueError("Not all decay file parameters were specified.")
+        raise ValueError("Not all decay file parameters were specified?")
 
 
-def format_template_dec_file(path: Path | str, parameter_values: ParameterValues):
+def format_template_dec_file(path: Path | str, parameter_values: dict[str, float]):
     text = read_dec_file(path)
     out = format_template_dec_file_string(text, parameter_values)
     return out
@@ -31,7 +35,7 @@ def format_template_dec_file(path: Path | str, parameter_values: ParameterValues
 def write_formatted_dec_file(
     formatted_dec_file_path: Path | str,
     template_dec_file_path: Path | str,
-    parameter_values: ParameterValues,
+    parameter_values: dict[str, float],
 ):
     formatted_dec_file_string = format_template_dec_file(
         template_dec_file_path, parameter_values

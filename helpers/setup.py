@@ -1,14 +1,15 @@
 from pathlib import Path
 from random import seed, uniform
-from itertools import product
+from dataclasses import dataclass
 
 from .util import (
-    ParameterValues,
-    ParameterCounts,
-    ParameterIntervals,
-    TrialMetadata,
-    FilePaths,
+    product_combine,
+    Interval,
     linspace,
+    TrialMetadata,
+    RunMetadata,
+    save_metadata_to_dir,
+    make_trial_metadata_list,
 )
 
 
@@ -18,44 +19,40 @@ def set_random_seed(seed_: int | None = None):
 
 @dataclass
 class RandomSampler:
-    parameter_bounds: ParameterBounds
+    parameter_bounds: dict[str, Interval]
 
     def sample(
         self,
         n: int,
-    ) -> list[ParameterValues]:
+    ) -> list[dict[str, float]]:
         out = [self._sample_once() for _ in range(n)]
         return out
 
     def _sample_once(
         self,
-    ) -> ParameterValues:
-        names = self.parameter_bounds.names
-        values = (uniform(*b) for b in self.parameter_bounds.bounds)
-        out = ParameterValues(names=names, values=values)
+    ) -> dict[str, float]:
+        out = {name: uniform(*bounds) for name, bounds in self.parameter_bounds.items()}
         return out
 
 
 @dataclass
 class GridSampler:
-    parameter_bounds: ParameterBounds
+    parameter_bounds: dict[str, Interval]
 
-    def sample(self, parameter_counts: ParameterCounts) -> list[ParameterValues]:
-        samples_per_wc = self._samples_per_wc(n)
-        samples = product(*samples_per_wc)
-        names = self.parameter_bounds.names
-        out = [ParameterValues(names=names, values=sample) for sample in samples]
+    def sample(self, parameter_counts: dict[str, int]) -> list[dict[str, float]]:
+        samples_per_wc = self._samples_per_wc(parameter_counts)
+        out = product_combine(samples_per_wc)
         return out
 
     def _samples_per_wc(
         self,
-        parameter_counts: ParameterCounts,
-    ) -> list[list[float, ...], ...]:
-        assert parameter_counts.names == self.parameter_bounds.names
-        out = [
-            linspace(*bounds, count)
-            for bounds, count in zip(self.parameter_bounds, parameter_counts.counts)
-        ]
+        parameter_counts: dict[str, int],
+    ) -> dict[str, list[float]]:
+        assert parameter_counts.keys() == self.parameter_bounds.keys()
+        out = {
+            name: linspace(*self.parameter_bounds[name], count)
+            for name, count in parameter_counts
+        }
         return out
 
 
@@ -95,7 +92,7 @@ def setup_trial_dir(trial_metadata: TrialMetadata, parent_dir_path: Path | str) 
 
 def setup_run_dir(
     run_metadata: RunMetadata,
-    parameter_values_list: list[ParameterValues],
+    parameter_values: list[dict[str, float]],
     parent_dir_path: Path | str,
 ) -> None:
     split = run_metadata.split
@@ -105,7 +102,7 @@ def setup_run_dir(
         run_metadata,
         dir_,
     )
-    trial_metadatas = make_trial_metadata_list(run_metadata, parameter_values_list)
+    trial_metadatas = make_trial_metadata_list(run_metadata, parameter_values)
     for trial_metadata in trial_metadatas:
         setup_trial_dir(trial_metadata, dir_)
     return dir_

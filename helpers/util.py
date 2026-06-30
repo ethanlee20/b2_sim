@@ -1,9 +1,15 @@
 from typing import Any
-from dataclasses import dataclass, asdict
+from itertools import product
+from dataclasses import dataclass, asdict, field, fields, is_dataclass
+from copy import deepcopy
 from pathlib import Path
 from json import load, dump
-from types import FunctionType
-from functools import cached_property
+
+
+def product_combine(d: dict[Any, list | tuple]):
+    prod = product(*d.values())
+    out = [dict(zip(d.keys(), i)) for i in prod]
+    return out
 
 
 def safer_convert_to_int(
@@ -63,6 +69,9 @@ def _rebuild_dataclass(cls, dict_: dict, keys: list | None = None):
 
 
 def rebuild_dataclass(cls, dict_: dict):
+    """
+    dict_ must not contain dataclasses.
+    """
     dict_ = deepcopy(dict_)
     out = _rebuild_dataclass(cls, dict_)
     return out
@@ -82,6 +91,13 @@ def save_dataclass_to_json_file(obj, path):
 def linspace(start: float, stop: float, num_points: int) -> list[float, ...]:
     if num_points < 1:
         raise ValueError("Need at least two points." f" Got: {num_points} points")
+    if num_points == 1:
+        if start != stop:
+            raise ValueError("If creating only one point, start must equal stop.")
+        out = [
+            start,
+        ]
+        return out
     num_spaces = num_points - 1
     spacing = (stop - start) / num_spaces
     out = [start + i * spacing for i in range(num_points)]
@@ -102,24 +118,6 @@ class Interval:
         tuple_ = self.as_tuple()
         out = tuple_.__iter__()
         return out
-
-
-@dataclass
-class ParameterCounts:
-    names: list[str, ...]
-    counts: list[int, ...]
-
-
-@dataclass
-class ParameterValues:
-    names: list[str, ...]
-    values: list[float, ...]
-
-
-@dataclass
-class ParameterBounds:
-    names: list[str, ...]
-    bounds: list[Interval, ...]
 
 
 @dataclass
@@ -170,7 +168,7 @@ class FilePaths:
 class SubtrialMetadata:
     subtrial_num: int
     num_events: int
-    parameter_values: ParameterValues
+    parameter_values: dict[str, float]
 
 
 @dataclass
@@ -178,11 +176,11 @@ class TrialMetadata:
     trial_num: int
     num_events: int
     num_subtrials: int
-    parameter_values: ParameterValues
+    parameter_values: dict[str, float]
 
     @property
-    def num_events_per_subtrial(self):
-        out = safer_convert_to_int(num_events / num_subtrials)
+    def num_events_per_subtrial(self) -> int:
+        out = safer_convert_to_int(self.num_events / self.num_subtrials)
         return out
 
 
@@ -192,23 +190,25 @@ class RunMetadata:
     num_events: int
     num_trials: int
     num_subtrials_per_trial: int
-    parameter_bounds: ParameterBounds
+    parameter_bounds: dict[str, Interval]
 
     @property
-    def num_events_per_trial(self):
+    def num_events_per_trial(self) -> int:
         out = safer_convert_to_int(self.num_events / self.num_trials)
         return out
 
     @property
-    def num_events_per_subtrial(self):
+    def num_events_per_subtrial(self) -> int:
         out = safer_convert_to_int(
             self.num_events_per_trial / self.num_subtrials_per_trial
         )
+        return out
 
 
 def make_trial_metadata_list(
-    run_metadata: RunMetadata, parameter_values_list: list[ParameterValues]
-):
+    run_metadata: RunMetadata, parameter_values_list: list[dict[str, float]]
+) -> list[TrialMetadata]:
+    assert len(parameter_values_list) == run_metadata.num_trials
     out = [
         TrialMetadata(
             trial_num,
