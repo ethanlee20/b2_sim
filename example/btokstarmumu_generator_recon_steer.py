@@ -5,10 +5,8 @@ import modularAnalysis as ma
 from variables import collections as vc
 from variables import utils as vu
 from variables import variables as vm
-import vertex as vx
 
-
-### command line options ###
+# command line options
 
 input_file_paths = sys.argv[1]  # overwritten on the Grid
 output_file_path = sys.argv[2]  # choose something like recon.root
@@ -19,7 +17,7 @@ print(f"Output file (modified on grid): {output_file_path}")
 print("-----------------------------------\n")
 
 
-### begin processing ###
+# begin processing
 
 main = b2.Path()
 
@@ -55,7 +53,7 @@ def reconstruct_generator_level():
     ma.fillParticleListFromMC(decayString="K+:gen", cut="", path=main)
     ma.fillParticleListFromMC(decayString="pi-:gen", cut="", path=main)
     ma.fillParticleListFromMC(decayString="mu+:gen", cut="", path=main)
-    
+
     ma.reconstructMCDecay("K*0:gen =direct=> K+:gen pi-:gen", cut="", path=main)
     ma.reconstructMCDecay("B0:gen =direct=> K*0:gen mu+:gen mu-:gen", cut="", path=main)
 
