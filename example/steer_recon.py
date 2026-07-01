@@ -97,7 +97,7 @@ def create_variable_lists():
     )
 
     lepton_vars = vu.create_aliases_for_selected(
-        list_of_variables=std_vars + ["e_id_BDT"],
+        list_of_variables=std_vars,
         decay_string="B0 -> [K*0 -> K+ pi-] ^mu+ ^mu-",
         prefix=["mu_p", "mu_m"],
     )
