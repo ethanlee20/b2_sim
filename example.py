@@ -38,7 +38,6 @@ submit_jobs(
     sim_steer_file_path="example/steer_sim.py",
     recon_steer_file_path="example/steer_recon.py",
     template_dec_file_path="example/dec.dec",
-    debug=True,
 )
 
 
@@ -73,5 +72,4 @@ submit_jobs(
     sim_steer_file_path="example/steer_sim.py",
     recon_steer_file_path="example/steer_recon.py",
     template_dec_file_path="example/dec.dec",
-    debug=True,
 )
