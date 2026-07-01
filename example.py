@@ -30,19 +30,19 @@ training_parameter_values = training_grid_sampler.sample(
 training_run_dir_path = setup_run_dir(
     run_metadata=training_run_metadata,
     parameter_values=training_parameter_values,
-    parent_dir_path="example_data/",
+    parent_dir_path="example/data/",
 )
 
 submit_jobs(
     run_dir_path=training_run_dir_path,
-    sim_steer_file_path="example_steer_sim.py",
-    recon_steer_file_path="example_steer_recon.py",
-    template_dec_file_path="example_dec.dec",
+    sim_steer_file_path="example/steer_sim.py",
+    recon_steer_file_path="example/steer_recon.py",
+    template_dec_file_path="example/dec.dec",
     queue="l",
     batch_size=200,
     batch_wait_sec=30,
     job_wait_sec=0.1,
-    debug=True,
+    debug=False,
 )
 
 
@@ -69,17 +69,17 @@ validation_parameter_values = validation_random_sampler.sample(
 validation_run_dir_path = setup_run_dir(
     run_metadata=validation_run_metadata,
     parameter_values=validation_parameter_values,
-    parent_dir_path="example_data/",
+    parent_dir_path="example/data/",
 )
 
 submit_jobs(
     run_dir_path=validation_run_dir_path,
-    sim_steer_file_path="example_steer_sim.py",
-    recon_steer_file_path="example_steer_recon.py",
-    template_dec_file_path="example_dec.dec",
+    sim_steer_file_path="example/steer_sim.py",
+    recon_steer_file_path="example/steer_recon.py",
+    template_dec_file_path="example/dec.dec",
     queue="l",
     batch_size=200,
     batch_wait_sec=30,
     job_wait_sec=0.1,
-    debug=True,
+    debug=False,
 )

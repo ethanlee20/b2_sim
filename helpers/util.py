@@ -126,12 +126,10 @@ class Filenames:
     decay: Path | str = "decay.dec"
     log: Path | str = "log.log"
 
-    @property
     def recon(self, subtrial: int):
         out = f"recon_{subtrial}.root"
         return out
 
-    @property
     def sim(self, subtrial: int):
         out = f"sim_{subtrial}.root"
         return out
@@ -151,13 +149,11 @@ class FilePaths:
         self.decay = self.dir_.joinpath(filenames.decay)
         self.log = self.dir_.joinpath(filenames.log)
 
-    @property
     def recon(self, subtrial: int):
         filename = Filenames().recon(subtrial)
         out = self.dir_.joinpath(filename)
         return out
 
-    @property
     def sim(self, subtrial: int):
         filename = Filenames().sim(subtrial)
         out = self.dir_.joinpath(filename)

@@ -51,7 +51,7 @@ class GridSampler:
         assert parameter_counts.keys() == self.parameter_bounds.keys()
         out = {
             name: linspace(*self.parameter_bounds[name], count)
-            for name, count in parameter_counts
+            for name, count in parameter_counts.items()
         }
         return out
 
@@ -97,7 +97,7 @@ def setup_run_dir(
 ) -> None:
     split = run_metadata.split
     dir_ = run_dir_path(split, parent_dir_path)
-    dir_.mkdir()
+    dir_.mkdir(parents=True)
     save_metadata_to_dir(
         run_metadata,
         dir_,
