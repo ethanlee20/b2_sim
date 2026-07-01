@@ -160,13 +160,22 @@ def submit_jobs(
     batch_size: int = 200,
     batch_wait_sec: int = 30,
     job_wait_sec: int | float = 0.1,
+    verbose: bool = True,
     debug: bool = False,
 ) -> None:
+    """
+    Submit jobs.
+
+    Rerunning will skip trials deemed complete.
+    """
 
     submitted_job_count = 0
 
     incomplete_trial_dirs = find_incomplete_trial_dirs(run_dir_path)
+
     for trial_dir in incomplete_trial_dirs:
+        if verbose:
+            print(f"Submitting jobs for {trial_dir}.")
         trial_metadata = load_metadata_from_dir(TrialMetadata, trial_dir)
         trial_file_paths = FilePaths(trial_dir)
         write_formatted_dec_file(
