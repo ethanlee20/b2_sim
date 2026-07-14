@@ -1,5 +1,6 @@
 from typing import Any
 from itertools import product
+from math import prod
 from dataclasses import dataclass, asdict, field, fields, is_dataclass
 from copy import deepcopy
 from pathlib import Path
@@ -183,14 +184,29 @@ class TrialMetadata:
 @dataclass
 class RunMetadata:
     split: str
-    num_events: int
+    num_total_events: int
     num_trials: int
     num_subtrials_per_trial: int
     parameter_bounds: dict[str, Interval]
+    sampling_type: str
+    parameter_grid_counts: None | dict[str, int] = None
+
+    def __post_init__(self):
+        if self.sampling_type not in ("grid", "random"):
+            raise ValueError
+        if self.sampling_type == "grid" and self.parameter_grid_counts is None:
+            raise ValueError
+        if self.sampling_type != "grid" and self.parameter_grid_counts is not None:
+            raise ValueError
+        if (
+            self.parameter_grid_counts is not None
+            and self.total_num_grid_points != self.num_trials
+        ):
+            raise ValueError
 
     @property
     def num_events_per_trial(self) -> int:
-        out = safer_convert_to_int(self.num_events / self.num_trials)
+        out = safer_convert_to_int(self.num_total_events / self.num_trials)
         return out
 
     @property
@@ -198,6 +214,13 @@ class RunMetadata:
         out = safer_convert_to_int(
             self.num_events_per_trial / self.num_subtrials_per_trial
         )
+        return out
+
+    @property
+    def total_num_grid_points(self) -> None | int:
+        if self.parameter_grid_counts is None:
+            return None
+        out = prod(self.parameter_grid_counts.values())
         return out
 
 

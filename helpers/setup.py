@@ -56,6 +56,17 @@ class GridSampler:
         return out
 
 
+def sample(run_metadata: RunMetadata):
+    sampler_cls = GridSampler if run_metadata.sampler_type == "grid" else RandomSampler
+    sampler = sampler_cls(run_metadata.parameter_bounds)
+    out = (
+        sampler.sample(run_metadata.parameter_grid_counts)
+        if run_metadata.sampler_type == "grid"
+        else sampler.sample(run_metadata.num_trials)
+    )
+    return out
+
+
 def run_dir_name(split: str) -> str:
     out = f"{split}"
     return out
@@ -92,16 +103,16 @@ def setup_trial_dir(trial_metadata: TrialMetadata, parent_dir_path: Path | str) 
 
 def setup_run_dir(
     run_metadata: RunMetadata,
-    parameter_values: list[dict[str, float]],
-    parent_dir_path: Path | str,
+    parent_dir: Path | str,
 ) -> None:
     split = run_metadata.split
-    dir_ = run_dir_path(split, parent_dir_path)
+    dir_ = run_dir_path(split, parent_dir)
     dir_.mkdir(parents=True)
     save_metadata_to_dir(
         run_metadata,
         dir_,
     )
+    parameter_values = sample(run_metadata)
     trial_metadatas = make_trial_metadata_list(run_metadata, parameter_values)
     for trial_metadata in trial_metadatas:
         setup_trial_dir(trial_metadata, dir_)

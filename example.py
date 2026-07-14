@@ -1,43 +1,51 @@
 from helpers import (
     Interval,
     RunMetadata,
-    GridSampler,
-    RandomSampler,
     setup_run_dir,
     submit_jobs,
 )
+
+# Setup
+
+data_dir = "example/data/"
+
+sim_steer_file_path = "example/steer_sim.py"
+recon_steer_file_path = "example/steer_recon.py"
+template_dec_file_path = "example/dec.dec"
+
+parameter_bounds = {
+    "dC_7": Interval(0, 0),
+    "dC_9": Interval(-2, 1),
+    "dC_10": Interval(0, 0),
+}
+
 
 # Create a training dataset by sampling from a grid of parameters
 
 training_run_metadata = RunMetadata(
     split="train",
-    num_events=10_000, 
-    num_trials=10, # each trial represents a different parameter configuration
+    total_num_events=10_000,
+    num_trials=10,  # each trial represents a different parameter configuration
     num_subtrials_per_trial=1,
-    parameter_bounds={
-        "dC_7": Interval(0, 0),
-        "dC_9": Interval(-2, 1),
-        "dC_10": Interval(0, 0),
+    parameter_bounds=parameter_bounds,
+    sampling_type="grid",
+    parameter_grid_counts={  # number of grid points along each axis
+        "dC_7": 1,
+        "dC_9": 10,
+        "dC_10": 1,
     },
 )
 
-training_grid_sampler = GridSampler(training_run_metadata.parameter_bounds)
-
-training_parameter_values = training_grid_sampler.sample(
-    parameter_counts={"dC_7": 1, "dC_9": 10, "dC_10": 1} # number of grid points along each axis
-)
-
-training_run_dir_path = setup_run_dir(
+training_run_dir = setup_run_dir(
     run_metadata=training_run_metadata,
-    parameter_values=training_parameter_values,
-    parent_dir_path="example/data/",
+    parent_dir=data_dir,
 )
 
 submit_jobs(
-    run_dir_path=training_run_dir_path,
-    sim_steer_file_path="example/steer_sim.py",
-    recon_steer_file_path="example/steer_recon.py",
-    template_dec_file_path="example/dec.dec",
+    run_dir=training_run_dir,
+    sim_steer_file_path=sim_steer_file_path,
+    recon_steer_file_path=recon_steer_file_path,
+    template_dec_file_path=template_dec_file_path,
 )
 
 
@@ -45,31 +53,20 @@ submit_jobs(
 
 validation_run_metadata = RunMetadata(
     split="val",
-    num_events=5_000,
+    total_num_events=5_000,
     num_trials=5,
     num_subtrials_per_trial=2,
-    parameter_bounds={
-        "dC_7": Interval(0, 0),
-        "dC_9": Interval(-2, 1),
-        "dC_10": Interval(0, 0),
-    },
+    parameter_bounds=parameter_bounds,
+    sampling_type="random",
 )
 
-validation_random_sampler = RandomSampler(validation_run_metadata.parameter_bounds)
-
-validation_parameter_values = validation_random_sampler.sample(
-    n=validation_run_metadata.num_trials
-)
-
-validation_run_dir_path = setup_run_dir(
-    run_metadata=validation_run_metadata,
-    parameter_values=validation_parameter_values,
-    parent_dir_path="example/data/",
+validation_run_dir = setup_run_dir(
+    run_metadata=validation_run_metadata, parent_dir=data_dir
 )
 
 submit_jobs(
-    run_dir_path=validation_run_dir_path,
-    sim_steer_file_path="example/steer_sim.py",
-    recon_steer_file_path="example/steer_recon.py",
-    template_dec_file_path="example/dec.dec",
+    run_dir=validation_run_dir,
+    sim_steer_file_path=sim_steer_file_path,
+    recon_steer_file_path=recon_steer_file_path,
+    template_dec_file_path=template_dec_file_path,
 )

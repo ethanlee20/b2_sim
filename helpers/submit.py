@@ -152,7 +152,7 @@ def find_incomplete_trial_dirs(dir_path: Path | str) -> list[Path]:
 
 
 def submit_jobs(
-    run_dir_path: Path | str,
+    run_dir: Path | str,
     sim_steer_file_path: Path | str,
     recon_steer_file_path: Path | str,
     template_dec_file_path: Path | str,
@@ -171,7 +171,7 @@ def submit_jobs(
 
     submitted_job_count = 0
 
-    incomplete_trial_dirs = find_incomplete_trial_dirs(run_dir_path)
+    incomplete_trial_dirs = find_incomplete_trial_dirs(run_dir)
 
     for trial_dir in incomplete_trial_dirs:
         if verbose:
