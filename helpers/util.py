@@ -184,7 +184,7 @@ class TrialMetadata:
 @dataclass
 class RunMetadata:
     split: str
-    num_total_events: int
+    total_num_events: int
     num_trials: int
     num_subtrials_per_trial: int
     parameter_bounds: dict[str, Interval]
@@ -206,7 +206,7 @@ class RunMetadata:
 
     @property
     def num_events_per_trial(self) -> int:
-        out = safer_convert_to_int(self.num_total_events / self.num_trials)
+        out = safer_convert_to_int(self.total_num_events / self.num_trials)
         return out
 
     @property

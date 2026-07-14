@@ -57,11 +57,11 @@ class GridSampler:
 
 
 def sample(run_metadata: RunMetadata):
-    sampler_cls = GridSampler if run_metadata.sampler_type == "grid" else RandomSampler
+    sampler_cls = GridSampler if run_metadata.sampling_type == "grid" else RandomSampler
     sampler = sampler_cls(run_metadata.parameter_bounds)
     out = (
         sampler.sample(run_metadata.parameter_grid_counts)
-        if run_metadata.sampler_type == "grid"
+        if run_metadata.sampling_type == "grid"
         else sampler.sample(run_metadata.num_trials)
     )
     return out

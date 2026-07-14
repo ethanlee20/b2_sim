@@ -46,6 +46,7 @@ submit_jobs(
     sim_steer_file_path=sim_steer_file_path,
     recon_steer_file_path=recon_steer_file_path,
     template_dec_file_path=template_dec_file_path,
+    debug=True,
 )
 
 
@@ -55,7 +56,7 @@ validation_run_metadata = RunMetadata(
     split="val",
     total_num_events=5_000,
     num_trials=5,
-    num_subtrials_per_trial=2,
+    num_subtrials_per_trial=2, # number of files per parameter value set
     parameter_bounds=parameter_bounds,
     sampling_type="random",
 )
@@ -69,4 +70,5 @@ submit_jobs(
     sim_steer_file_path=sim_steer_file_path,
     recon_steer_file_path=recon_steer_file_path,
     template_dec_file_path=template_dec_file_path,
+    debug=True,
 )
