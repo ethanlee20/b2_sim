@@ -46,7 +46,6 @@ submit_jobs(
     sim_steer_file_path=sim_steer_file_path,
     recon_steer_file_path=recon_steer_file_path,
     template_dec_file_path=template_dec_file_path,
-    debug=True,
 )
 
 
@@ -70,5 +69,4 @@ submit_jobs(
     sim_steer_file_path=sim_steer_file_path,
     recon_steer_file_path=recon_steer_file_path,
     template_dec_file_path=template_dec_file_path,
-    debug=True,
 )
