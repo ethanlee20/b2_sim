@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "b2_run_sim"
-version = "0.0.1"
+version = "0.0.3"
 authors = [
   { name="Ethan Lee", email="elee20@hawaii.edu" },
 ]
@@ -19,5 +19,5 @@ license = "MIT"
 license-files = ["LICEN[CS]E*"]
 
 [project.urls]
-Homepage = "https://github.com/ethanlee20/b2_sim"
-Issues = "https://github.com/ethanlee20/b2_sim/issues"
+Homepage = "https://github.com/ethanlee20/b2_run_sim"
+Issues = "https://github.com/ethanlee20/b2_run_sim/issues"

@@ -7,6 +7,8 @@ from b2_run_sim import (
 
 # Setup
 
+debug = True # Set to False if you want to submit jobs!
+
 data_dir = "data/"
 sim_steer_file_path = "steer_sim.py"
 recon_steer_file_path = "steer_recon.py"
@@ -45,7 +47,7 @@ submit_jobs(
     sim_steer_file_path=sim_steer_file_path,
     recon_steer_file_path=recon_steer_file_path,
     template_dec_file_path=template_dec_file_path,
-    debug=True,
+    debug=debug, 
 )
 
 
@@ -69,5 +71,5 @@ submit_jobs(
     sim_steer_file_path=sim_steer_file_path,
     recon_steer_file_path=recon_steer_file_path,
     template_dec_file_path=template_dec_file_path,
-    debug=True,
+    debug=debug,
 )
