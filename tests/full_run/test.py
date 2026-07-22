@@ -1,4 +1,4 @@
-from helpers import (
+from b2_run_sim import (
     Interval,
     RunMetadata,
     setup_run_dir,
@@ -7,11 +7,10 @@ from helpers import (
 
 # Setup
 
-data_dir = "example/data/"
-
-sim_steer_file_path = "example/steer_sim.py"
-recon_steer_file_path = "example/steer_recon.py"
-template_dec_file_path = "example/dec.dec"
+data_dir = "data/"
+sim_steer_file_path = "steer_sim.py"
+recon_steer_file_path = "steer_recon.py"
+template_dec_file_path = "dec.dec"
 
 parameter_bounds = {
     "dC_7": Interval(0, 0),
@@ -24,14 +23,14 @@ parameter_bounds = {
 
 training_run_metadata = RunMetadata(
     split="train",
-    total_num_events=10_000,
-    num_trials=10,  # each trial represents a different parameter configuration
+    total_num_events=1_000,
+    num_trials=5,  # each trial represents a different parameter configuration
     num_subtrials_per_trial=1,
     parameter_bounds=parameter_bounds,
     sampling_type="grid",
     parameter_grid_counts={  # number of grid points along each axis
         "dC_7": 1,
-        "dC_9": 10,
+        "dC_9": 5,
         "dC_10": 1,
     },
 )
@@ -46,6 +45,7 @@ submit_jobs(
     sim_steer_file_path=sim_steer_file_path,
     recon_steer_file_path=recon_steer_file_path,
     template_dec_file_path=template_dec_file_path,
+    debug=True,
 )
 
 
@@ -53,8 +53,8 @@ submit_jobs(
 
 validation_run_metadata = RunMetadata(
     split="val",
-    total_num_events=5_000,
-    num_trials=5,
+    total_num_events=1_000,
+    num_trials=4,
     num_subtrials_per_trial=2,  # number of files per parameter value set
     parameter_bounds=parameter_bounds,
     sampling_type="random",
@@ -69,4 +69,5 @@ submit_jobs(
     sim_steer_file_path=sim_steer_file_path,
     recon_steer_file_path=recon_steer_file_path,
     template_dec_file_path=template_dec_file_path,
+    debug=True,
 )

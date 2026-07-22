@@ -1,7 +1,13 @@
 from pathlib import Path
 from dataclasses import dataclass, field
+from math import prod
 
-from .util import Interval, load_dataclass_from_json_file, save_dataclass_to_json_file
+from .util import (
+    Interval,
+    load_dataclass_from_json_file,
+    save_dataclass_to_json_file,
+    safer_convert_to_int,
+)
 
 
 @dataclass

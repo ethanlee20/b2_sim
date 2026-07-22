@@ -123,7 +123,7 @@ def submit_job(
         queue=queue,
     )
     if debug:
-        print(command, "\n")
+        print(command)
         return
     run(command, shell=True)
 

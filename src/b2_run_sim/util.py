@@ -1,7 +1,6 @@
 from typing import Any
 from itertools import product
-from math import prod
-from dataclasses import dataclass, asdict, field, fields, is_dataclass
+from dataclasses import dataclass, asdict, fields, is_dataclass
 from copy import deepcopy
 from pathlib import Path
 from json import load, dump
