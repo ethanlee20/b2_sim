@@ -2,7 +2,7 @@ from pathlib import Path
 from subprocess import run
 from time import sleep
 
-from .util import TrialMetadata, load_metadata_from_dir, FilePaths
+from .config import TrialMetadata, load_metadata_from_dir, FilePaths
 
 
 def read_dec_file(path: Path | str) -> str:

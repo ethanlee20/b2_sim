@@ -2,10 +2,8 @@ from pathlib import Path
 from random import seed, uniform
 from dataclasses import dataclass
 
-from .util import (
-    product_combine,
-    Interval,
-    linspace,
+from .util import product_combine, Interval, linspace
+from .config import (
     TrialMetadata,
     RunMetadata,
     save_metadata_to_dir,

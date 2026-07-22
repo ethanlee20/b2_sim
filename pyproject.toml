@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "btokstll_sim"
+version = "0.0.1"
+authors = [
+  { name="Ethan Lee", email="elee20@hawaii.edu" },
+]
+description = "Simulation helper for basf2."
+readme = "README.md"
+requires-python = ">=3.14"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/ethanlee20/btokstll_sim"
+Issues = "https://github.com/ethanlee20/btokstll_sim/issues"
